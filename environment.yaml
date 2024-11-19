@@ -3,12 +3,19 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  - pandas
+  - numpy
+  - dask
+  - scipy
+  - pytables
   - pip
   - ruff
   - mypy
   - sphinx
   - pre-commit
   - conda-lock
+  - fastparquet
+  - numba
   - pip:
     - pip
     - setuptools
