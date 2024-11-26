@@ -1,7 +1,15 @@
 import numpy as np
 import pandas as pd
 
-from pearl.definitions import ART_USER
+from pearl.definitions import (
+    ART_NONUSER,
+    ART_USER,
+    POPULATION_TYPE_DICT,
+    STAGE0,
+    STAGE1,
+    STAGE2,
+    STAGE3,
+)
 from pearl.engine import Event, EventGrouping
 from pearl.interpolate import restricted_cubic_spline_var, restricted_quadratic_spline_var
 from pearl.parameters import Parameters
@@ -61,6 +69,36 @@ def add_default_columns(population: pd.DataFrame) -> pd.DataFrame:
     population["year"] = np.array(2009, dtype="int16")
 
     return population
+
+
+def delta_bmi(population):
+    population["delta_bmi"] = population["post_art_bmi"] - population["pre_art_bmi"]
+
+
+def add_multimorbidity(population: pd.DataFrame) -> pd.DataFrame:
+    population["mm"] = np.array(population[STAGE2 + STAGE3].sum(axis=1), dtype="int8")
+    return population
+
+
+def sort_alphabetically(population: pd.DataFrame) -> pd.DataFrame:
+    # Sort columns alphabetically
+    population = population.reindex(sorted(population), axis=1)
+    return population
+
+
+def cast_type(population: pd.DataFrame) -> pd.DataFrame:
+    population = population.astype(POPULATION_TYPE_DICT)
+    return population
+
+
+class Status(Event):
+    def __init__(self, parameters, status: str):
+        super().__init__(parameters)
+        self.status = status
+
+    def __call__(self, population):
+        population["status"] = self.status
+        return population
 
 
 class SimulateAges(Event):
@@ -342,7 +380,7 @@ class PostArtBMI(Event):
         pop_future["age_cat"] = np.floor(pop_future["age"] / 10)
         pop_future.loc[pop_future["age_cat"] < 2, "age_cat"] = 2
         pop_future.loc[pop_future["age_cat"] > 7, "age_cat"] = 7
-        pop["sqrtcd4_post"] = calculate_cd4_increase(pop_future, parameters)
+        pop["sqrtcd4_post"] = Cd4Increase(self.parameters)(pop_future)
 
         pop["sqrtcd4_post_"] = restricted_cubic_spline_var(
             pop["sqrtcd4_post"].to_numpy(), self.t_sqrtcd4_post, 1
@@ -373,38 +411,21 @@ class PostArtBMI(Event):
         sqrt_post_art_bmi = np.matmul(pop_matrix, self.coeffs)
         sqrt_post_art_bmi = sqrt_post_art_bmi.T[0]
 
-        if intervention:
-            sqrt_post_art_bmi = draw_from_trunc_norm(
-                np.sqrt(10),
-                np.sqrt(30),
-                sqrt_post_art_bmi,
-                np.sqrt(self.rse),
-                len(sqrt_post_art_bmi),
-                self.random_state,
-            )
-        else:
-            sqrt_post_art_bmi = draw_from_trunc_norm(
-                np.sqrt(10),
-                np.sqrt(65),
-                sqrt_post_art_bmi,
-                np.sqrt(self.rse),
-                len(sqrt_post_art_bmi),
-                self.random_state,
-            )
+        sqrt_post_art_bmi = draw_from_trunc_norm(
+            np.sqrt(10),
+            np.sqrt(65),
+            sqrt_post_art_bmi,
+            np.sqrt(self.rse),
+            len(sqrt_post_art_bmi),
+            self.random_state,
+        )
         post_art_bmi = sqrt_post_art_bmi**2.0
 
         if self.parameters.sa_variables and "post_art_bmi" in self.parameters.sa_variables:
             post_art_bmi *= self.parameters.sa_scalars["post_art_bmi"]
 
-        return np.array(post_art_bmi)
-
-
-class BMI(Event):
-    def __init__(self, parameters):
-        super().__init__(parameters)
-
-    def __call__(self, population):
-        return
+        population["post_art_bmi"] = np.array(post_art_bmi)
+        return population
 
 
 class BasePopulation(Event):
@@ -427,18 +448,122 @@ class BasePopulation(Event):
         return self.events(population)
 
 
+class Bmi(Event):
+    def __init__(self, parameters):
+        super().__init__(parameters)
+        self.events = [PreArtBMI(self.parameters), PostArtBMI(self.parameters), delta_bmi]
+
+    def __call__(self, population):
+        return self.events(population)
+
+
+class Comorbidity(Event):
+    def __init__(self, parameters, comorbidity: str, user: bool, new_init: bool):
+        super().__init__(parameters)
+        self.comorbidity = comorbidity
+        self.new_init = new_init
+        self.probability = (
+            self.parameters.prev_users_dict[self.comorbidity].values
+            if new_init
+            else self.parameters.prev_inits_dict[self.comorbidity].values
+        )
+        self.user = user
+
+    def __call__(self, population):
+        population[self.condition] = (
+            self.random_state.rand(len(population.index)) < self.probability
+        ).astype(int)
+        if self.user:
+            population[f"t_{self.condition}"] = np.array(0, dtype="int8")
+        else:
+            population[f"t_{self.condition}"] = population[self.condition]
+        return population
+
+
+class ApplyComorbidities(Event):
+    def __init__(self, events, user: bool):
+        super().__init__(events)
+        self.user = user
+
+        self.events = EventGrouping(
+            [
+                Comorbidity(self.parameters, comorbidity, self.user)
+                for comorbidity in STAGE0 + STAGE1 + STAGE2 + STAGE3
+            ]
+        )
+
+    def __call__(self, population):
+        return self.events(population)
+
+
+class Ltfu(Event):
+    def __init__(self, parameters, population_size: int):
+        super().__init__(parameters)
+        self.population_size = population_size
+        self.coeffs = self.parameters.years_out_of_care["years"]
+        self.probability = self.parameters.years_out_of_care["probability"]
+
+    def __call__(self, population):
+        years_out_of_care = self.random_state.choice(
+            a=self.coeffs,
+            size=self.population_size,
+            p=self.probability,
+        )
+
+        population["sqrtcd4n_exit"] = population["time_varying_sqrtcd4n"]
+        population["ltfu_year"] = 2009
+        population["return_year"] = 2009 + years_out_of_care
+        population["n_lost"] += 1
+
+        return population
+
+
 class UserPopInit(Event):
     def __init__(self, parameters: Parameters, population_size: int):
         super().__init__(parameters)
         self.population_size = population_size
 
-        def set_user_status(population: pd.DataFrame) -> pd.DataFrame:
-            population["status"] = ART_USER
-            return population
-
         self.events = EventGrouping(
-            [BasePopulation(self.parameters, self.population_size), set_user_status]
+            [
+                BasePopulation(self.parameters, self.population_size),
+                Status(self.parameters, ART_USER),
+                Bmi(self.parameters),
+                ApplyComorbidities(self.parameters, user=True),
+                add_multimorbidity,
+                sort_alphabetically,
+                cast_type,
+            ]
         )
 
     def __call__(self, population):
         return self.events(population)
+
+
+class NonUserPopInit(Event):
+    def __init__(self, parameters, population_size: int):
+        super().__init__(parameters)
+        self.population_size = population_size
+
+        self.events = EventGrouping(
+            [
+                BasePopulation(self.parameters, self.population_size),
+                Ltfu(self.parameters, self.population_size),
+                Status(self.parameters, ART_NONUSER),
+                Bmi(self.parameters),
+                ApplyComorbidities(self.parameters, user=True),
+                add_multimorbidity,
+                sort_alphabetically,
+                cast_type,
+            ]
+        )
+
+    def __call__(self, population):
+        return super().__call__(population)
+
+
+class NewPopulation(Event):
+    def __init__(self, parameters):
+        super().__init__(parameters)
+
+    def __call__(self, population):
+        return super().__call__(population)
