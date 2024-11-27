@@ -336,7 +336,7 @@ class Parameters:
             * (self.cd4n_by_h1yy["high_value"] - self.cd4n_by_h1yy["low_value"])
         ) + self.cd4n_by_h1yy["low_value"]
 
-        self.n_initial_users = self.parameters.on_art_2009.iloc[0]
+        self.n_initial_users = self.on_art_2009.iloc[0]
         # Simulate number of new art initiators and initial nonusers
         self.n_initial_nonusers, self.n_new_agents = self.simulate_new_dx()
 

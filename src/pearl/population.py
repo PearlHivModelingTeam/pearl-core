@@ -18,6 +18,12 @@ from pearl.parameters import Parameters
 from pearl.sample import draw_from_trunc_norm
 
 
+def add_id(population):
+    population["id"] = np.array(range(population.index.size))
+    population = population.set_index(["age_cat", "id"]).sort_index()
+    return population
+
+
 def add_age_categories(population: pd.DataFrame) -> pd.DataFrame:
     """
     Add an age_cat column corresponding to the decade age of the agent, truncated at a maximum
@@ -37,9 +43,6 @@ def add_age_categories(population: pd.DataFrame) -> pd.DataFrame:
     population["age_cat"] = np.floor(population["age"] / 10)
     population.loc[population["age_cat"] > 7, "age_cat"] = 7
     population.loc[population["age_cat"] < 2, "age_cat"] = 2
-    population["id"] = np.array(range(population.index.size))
-    population = population.set_index(["age_cat", "id"]).sort_index()
-
     return population
 
 
@@ -95,6 +98,7 @@ def add_default_columns_new(population: pd.DataFrame):
 
 def delta_bmi(population):
     population["delta_bmi"] = population["post_art_bmi"] - population["pre_art_bmi"]
+    return population
 
 
 def add_multimorbidity(population: pd.DataFrame) -> pd.DataFrame:
@@ -236,48 +240,43 @@ class Cd4Increase(Event):
         self.coeffs = self.parameters.cd4_increase.to_numpy(dtype=float)
 
     def __call__(self, population):
+        pop = population.copy()
         # Calculate spline variables
-        population["time_from_h1yy"] = population["year"] - population["last_h1yy"]
-        population["time_from_h1yy_"] = restricted_quadratic_spline_var(
-            population["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 1
+        pop["time_from_h1yy"] = pop["year"] - pop["last_h1yy"]
+        pop["time_from_h1yy_"] = restricted_quadratic_spline_var(
+            pop["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 1
         )
-        population["time_from_h1yy__"] = restricted_quadratic_spline_var(
-            population["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 2
+        pop["time_from_h1yy__"] = restricted_quadratic_spline_var(
+            pop["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 2
         )
-        population["time_from_h1yy___"] = restricted_quadratic_spline_var(
-            population["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 3
+        pop["time_from_h1yy___"] = restricted_quadratic_spline_var(
+            pop["time_from_h1yy"].to_numpy(), self.knots.to_numpy(), 3
         )
 
         # Calculate CD4 Category Variables
-        population["cd4_cat_349"] = (
-            population["last_init_sqrtcd4n"].ge(np.sqrt(200.0))
-            & population["last_init_sqrtcd4n"].lt(np.sqrt(350.0))
+        pop["cd4_cat_349"] = (
+            pop["last_init_sqrtcd4n"].ge(np.sqrt(200.0))
+            & pop["last_init_sqrtcd4n"].lt(np.sqrt(350.0))
         ).astype(int)
-        population["cd4_cat_499"] = (
-            population["last_init_sqrtcd4n"].ge(np.sqrt(350.0))
-            & population["last_init_sqrtcd4n"].lt(np.sqrt(500.0))
+        pop["cd4_cat_499"] = (
+            pop["last_init_sqrtcd4n"].ge(np.sqrt(350.0))
+            & pop["last_init_sqrtcd4n"].lt(np.sqrt(500.0))
         ).astype(int)
-        population["cd4_cat_500"] = population["last_init_sqrtcd4n"].ge(np.sqrt(500.0)).astype(int)
+        pop["cd4_cat_500"] = pop["last_init_sqrtcd4n"].ge(np.sqrt(500.0)).astype(int)
 
         # Create cross term variables
-        population["timecd4cat349_"] = population["time_from_h1yy_"] * population["cd4_cat_349"]
-        population["timecd4cat499_"] = population["time_from_h1yy_"] * population["cd4_cat_499"]
-        population["timecd4cat500_"] = population["time_from_h1yy_"] * population["cd4_cat_500"]
-        population["timecd4cat349__"] = population["time_from_h1yy__"] * population["cd4_cat_349"]
-        population["timecd4cat499__"] = population["time_from_h1yy__"] * population["cd4_cat_499"]
-        population["timecd4cat500__"] = population["time_from_h1yy__"] * population["cd4_cat_500"]
-        population["timecd4cat349___"] = (
-            population["time_from_h1yy___"] * population["cd4_cat_349"]
-        )
-        population["timecd4cat499___"] = (
-            population["time_from_h1yy___"] * population["cd4_cat_499"]
-        )
-        population["timecd4cat500___"] = (
-            population["time_from_h1yy___"] * population["cd4_cat_500"]
-        )
+        pop["timecd4cat349_"] = pop["time_from_h1yy_"] * pop["cd4_cat_349"]
+        pop["timecd4cat499_"] = pop["time_from_h1yy_"] * pop["cd4_cat_499"]
+        pop["timecd4cat500_"] = pop["time_from_h1yy_"] * pop["cd4_cat_500"]
+        pop["timecd4cat349__"] = pop["time_from_h1yy__"] * pop["cd4_cat_349"]
+        pop["timecd4cat499__"] = pop["time_from_h1yy__"] * pop["cd4_cat_499"]
+        pop["timecd4cat500__"] = pop["time_from_h1yy__"] * pop["cd4_cat_500"]
+        pop["timecd4cat349___"] = pop["time_from_h1yy___"] * pop["cd4_cat_349"]
+        pop["timecd4cat499___"] = pop["time_from_h1yy___"] * pop["cd4_cat_499"]
+        pop["timecd4cat500___"] = pop["time_from_h1yy___"] * pop["cd4_cat_500"]
 
         # Create numpy matrix
-        pop_matrix = population[
+        pop_matrix = pop[
             [
                 "intercept",
                 "time_from_h1yy",
@@ -430,7 +429,8 @@ class PostArtBMI(Event):
         pop_future["age_cat"] = np.floor(pop_future["age"] / 10)
         pop_future.loc[pop_future["age_cat"] < 2, "age_cat"] = 2
         pop_future.loc[pop_future["age_cat"] > 7, "age_cat"] = 7
-        pop["sqrtcd4_post"] = Cd4Increase(self.parameters)(pop_future)
+        # TODO fix
+        pop["sqrtcd4_post"] = Cd4Increase(self.parameters)(pop_future)["time_varying_sqrtcd4n"]
 
         pop["sqrtcd4_post_"] = restricted_cubic_spline_var(
             pop["sqrtcd4_post"].to_numpy(), self.t_sqrtcd4_post, 1
@@ -487,6 +487,7 @@ class BasePopulation(Event):
             [
                 SimulateAges(self.parameters, self.population_size),
                 add_age_categories,
+                add_id,
                 H1yy(self.parameters),
                 SqrtCd4nInit(self.parameters),
                 add_default_columns,
@@ -501,7 +502,9 @@ class BasePopulation(Event):
 class Bmi(Event):
     def __init__(self, parameters):
         super().__init__(parameters)
-        self.events = [PreArtBMI(self.parameters), PostArtBMI(self.parameters), delta_bmi]
+        self.events = EventGrouping(
+            [PreArtBMI(self.parameters), PostArtBMI(self.parameters), delta_bmi]
+        )
 
     def __call__(self, population):
         return self.events(population)
@@ -513,31 +516,32 @@ class Comorbidity(Event):
         self.comorbidity = comorbidity
         self.new_init = new_init
         self.probability = (
-            self.parameters.prev_users_dict[self.comorbidity].values
+            self.parameters.prev_inits_dict[self.comorbidity].values
             if new_init
-            else self.parameters.prev_inits_dict[self.comorbidity].values
+            else self.parameters.prev_users_dict[self.comorbidity].values
         )
         self.user = user
 
     def __call__(self, population):
-        population[self.condition] = (
+        population[self.comorbidity] = (
             self.random_state.rand(len(population.index)) < self.probability
         ).astype(int)
         if self.user:
-            population[f"t_{self.condition}"] = np.array(0, dtype="int8")
+            population[f"t_{self.comorbidity}"] = np.array(0, dtype="int8")
         else:
-            population[f"t_{self.condition}"] = population[self.condition]
+            population[f"t_{self.comorbidity}"] = population[self.comorbidity]
         return population
 
 
 class ApplyComorbidities(Event):
-    def __init__(self, paramaters, user: bool):
+    def __init__(self, paramaters, user: bool, new_init: bool):
         super().__init__(paramaters)
         self.user = user
+        self.new_init = new_init
 
         self.events = EventGrouping(
             [
-                Comorbidity(self.parameters, comorbidity, self.user)
+                Comorbidity(self.parameters, comorbidity, self.user, self.new_init)
                 for comorbidity in STAGE0 + STAGE1 + STAGE2 + STAGE3
             ]
         )
@@ -596,7 +600,9 @@ class NewAges(Event):
             grouped_pop = pd.DataFrame()
             n_initiators = self.parameters.n_new_agents.loc[h1yy, "art_initiators"]
             n_delayed = self.parameters.n_new_agents.loc[h1yy, "art_delayed"]
-            grouped_pop["age"] = SimulateAges(self.parameters, n_initiators + n_delayed, h1yy)
+            grouped_pop["age"] = SimulateAges(self.parameters, n_initiators + n_delayed, h1yy)(
+                pd.DataFrame([])
+            )
             grouped_pop["h1yy"] = h1yy
             grouped_pop["status"] = ART_NAIVE
             delayed = self.random_state.choice(
@@ -617,7 +623,7 @@ class UserPopInit(Event):
                 BasePopulation(self.parameters, self.population_size),
                 Status(self.parameters, ART_USER),
                 Bmi(self.parameters),
-                ApplyComorbidities(self.parameters, user=True),
+                ApplyComorbidities(self.parameters, user=True, new_init=False),
                 add_multimorbidity,
                 sort_alphabetically,
                 cast_type,
@@ -639,7 +645,7 @@ class NonUserPopInit(Event):
                 Ltfu(self.parameters, self.population_size),
                 Status(self.parameters, ART_NONUSER),
                 Bmi(self.parameters),
-                ApplyComorbidities(self.parameters, user=True),
+                ApplyComorbidities(self.parameters, user=False, new_init=False),
                 add_multimorbidity,
                 sort_alphabetically,
                 cast_type,
@@ -647,7 +653,7 @@ class NonUserPopInit(Event):
         )
 
     def __call__(self, population):
-        return super().__call__(population)
+        return self.events(population)
 
 
 class NewPopulation(Event):
@@ -659,9 +665,10 @@ class NewPopulation(Event):
                 NewAges(self.parameters),
                 YearsOutCare(self.parameters),
                 add_age_categories,
+                add_id,
                 SqrtCd4nNew(self.parameters),
                 add_default_columns_new,
-                ApplyComorbidities(self.parameters, user=False),
+                ApplyComorbidities(self.parameters, user=False, new_init=True),
                 add_multimorbidity,
                 PreArtBMI(self.parameters),
                 PostArtBMI(self.parameters),
@@ -685,7 +692,11 @@ class PearlPopulation(Event):
 
     def __call__(self, population):
         population = pd.concat(
-            self.user_pop(pd.DataFrame([])),
-            self.non_user_pop(pd.DataFrame([]), self.new_pop(pd.DataFrame([]))),
-        )
+            [
+                self.user_pop(pd.DataFrame([])),
+                self.non_user_pop(pd.DataFrame([])),
+                self.new_pop(pd.DataFrame([])),
+            ]
+        ).fillna(0)
+        population["id"] = np.array(range(population.index.size))
         return population

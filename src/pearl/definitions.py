@@ -1,11 +1,6 @@
 """Global Defintions"""
-import pandas as pd
 
 from pathlib import Path
-from pearl.engine import Event, EventGrouping
-from typing import Callable
-from typing import TypeAlias
-from typing import Union
 
 # Django style root dir definition
 ROOT_DIR = Path(__file__).parent.resolve()
@@ -70,7 +65,3 @@ STAGE1 = ["anx", "dpr"]
 STAGE2 = ["ckd", "lipid", "dm", "ht"]
 STAGE3 = ["malig", "esld", "mi"]
 ALL_COMORBIDITIES = STAGE0 + STAGE1 + STAGE2 + STAGE3
-
-# custom type aliases
-EventFunction: TypeAlias = Callable[[pd.DataFrame], pd.DataFrame]
-EventType: TypeAlias = Union[Event, EventGrouping, EventFunction]
