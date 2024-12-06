@@ -4,6 +4,7 @@ Tests for population.py
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from pytest import fixture
@@ -19,7 +20,13 @@ def param_file_path():
 
 @fixture
 def expected_population():
-    return pd.read_parquet(Path("tests/pearl/assets/population_test/population.parquet"))
+    population = pd.read_parquet(
+        Path("tests/pearl/assets/population_test/before_run_population.parquet")
+    ).drop(columns=["index"])
+    population = population.reset_index()
+    population["id"] = np.array(range(population.index.size))
+    population = population.set_index(["id"])
+    return population
 
 
 @fixture

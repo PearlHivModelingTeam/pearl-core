@@ -7,7 +7,6 @@ import pandas as pd
 
 from pearl.parameters import Parameters
 
-
 class Event(ABC):
     def __init__(self, parameters: Parameters):
         self.parameters = parameters

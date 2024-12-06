@@ -216,7 +216,7 @@ class SqrtCd4nNew(Event):
         super().__init__(parameters)
 
     def __call__(self, population):
-        population.reset_index()
+        population = population.reset_index()
         unique_h1yy = population["h1yy"].unique()
         population["init_sqrtcd4n"] = 0.0
         for h1yy in unique_h1yy:
@@ -691,12 +691,22 @@ class PearlPopulation(Event):
         self.new_pop = NewPopulation(self.parameters)
 
     def __call__(self, population):
-        population = pd.concat(
-            [
-                self.user_pop(pd.DataFrame([])),
-                self.non_user_pop(pd.DataFrame([])),
-                self.new_pop(pd.DataFrame([])),
-            ]
-        ).fillna(0)
+        user_pop = self.user_pop(pd.DataFrame([]))
+        non_user_pop = self.non_user_pop(pd.DataFrame([]))
+        new_pop = self.new_pop(pd.DataFrame([]))
+
+        population = (
+            pd.concat(
+                [
+                    user_pop,
+                    non_user_pop,
+                    new_pop,
+                ]
+            )
+            .fillna(0)
+            .drop(columns=["index"])
+        )
+        population = population.reset_index()
         population["id"] = np.array(range(population.index.size))
+        population = population.set_index(["id"])
         return population
