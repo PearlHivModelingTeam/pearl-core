@@ -21,6 +21,7 @@ class Parameters:
         replication: int,
         group_name: str,
         new_dx: str,
+        start_year: int,
         final_year: int,
         mortality_model: str,
         mortality_threshold_flag: bool,
@@ -117,7 +118,9 @@ class Parameters:
         self.replication = replication
         self.group_name = group_name
         self.new_dx_val = new_dx
+        self.start_year = start_year
         self.final_year = final_year
+        self.year = start_year
         self.mortality_model = mortality_model
         self.mortality_threshold_flag = mortality_threshold_flag
         self.idu_threshold = idu_threshold

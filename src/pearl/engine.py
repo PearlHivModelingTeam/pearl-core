@@ -7,6 +7,7 @@ import pandas as pd
 
 from pearl.parameters import Parameters
 
+
 class Event(ABC):
     def __init__(self, parameters: Parameters):
         self.parameters = parameters
@@ -33,7 +34,8 @@ EventType: TypeAlias = Union[Event, EventGrouping, EventFunction]
 
 
 class Pearl:
-    def __init__(self, population_generator: EventType):
+    def __init__(self, parameters: Parameters, population_generator: EventType):
+        self.parameters = parameters
         self.population_generator = population_generator
         self.before_run: EventType | None = None
         self.after_run: EventType | None = None
@@ -41,8 +43,8 @@ class Pearl:
 
         self.population = self.population_generator(pd.DataFrame([]))
 
-    def run(self, start_year, end_year):
+    def run(self):
         self.population = self.before_run(self.population)
-        for _ in range(end_year - start_year):
+        for _ in range(self.parameters.final_year - self.parameters.start_year):
             self.population = self.events(self.population)
         self.population = self.after_run(self.population)
