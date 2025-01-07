@@ -22,7 +22,7 @@ from pearl.definitions import (
     STAGE2,
     STAGE3,
 )
-from pearl.engine import Event
+from pearl.engine import Event, EventGrouping
 from pearl.interpolate import restricted_cubic_spline_var, restricted_quadratic_spline_var
 from pearl.multimorbidity import create_comorbidity_pop_matrix
 from pearl.parameters import Parameters
@@ -400,7 +400,7 @@ class ComorbidityIncidence(Event):
                 coeff_matrix,
             )
 
-            if self.self.sa_variables and f"{condition}_incidence" in self.sa_variables:
+            if self.sa_variables and f"{condition}_incidence" in self.sa_variables:
                 prob = np.clip(
                     a=prob * self.sa_scalars[f"{condition}_incidence"],
                     a_min=0,
@@ -426,7 +426,7 @@ class KillInCare(Event):
         super().__init__(parameters)
 
         self.coeff = parameters.mortality_in_care_co
-        self.mortality_flag = parameters.mortality_threshold_flag
+        self.mortality_threshold_flag = parameters.mortality_threshold_flag
         self.mortality_threshold = parameters.mortality_threshold
 
     def __call__(self, population):
@@ -476,7 +476,7 @@ class KillInCare(Event):
             | (population["age"] > 85)
         ) & in_care
         population.loc[died, "status"] = DYING_ART_USER
-        population.loc[died, "year_died"] = np.array(self.year, dtype="int16")
+        population.loc[died, "year_died"] = np.array(self.parameters.year, dtype="int16")
 
         return population
 
@@ -530,12 +530,12 @@ class DecreaseCD4Count(Event):
 
     def __call__(self, population):
         """Calculate and set new CD4 count for ART non-using population."""
-        out_care = self.population["status"] == ART_NONUSER
-        new_sqrt_cd4 = calculate_cd4_decrease(
-            self.population.loc[out_care].copy(), self.parameters
-        )
+        out_care = population["status"] == ART_NONUSER
+        new_sqrt_cd4 = calculate_cd4_decrease(population.loc[out_care].copy(), self.parameters)
 
-        self.population.loc[out_care, "time_varying_sqrtcd4n"] = new_sqrt_cd4
+        population.loc[out_care, "time_varying_sqrtcd4n"] = new_sqrt_cd4
+
+        return population
 
 
 class KillOutCare(Event):
@@ -615,3 +615,27 @@ class Reengage(Event):
         population.loc[reengaged, "years_out"] = 0
 
         return population
+
+
+class PearlEvents(Event):
+    def __init__(self, parameters):
+        super().__init__(parameters)
+
+        self.events = EventGrouping(
+            [
+                IncrementYear(self.parameters),
+                ComorbidityIncidence(self.parameters),
+                update_mm,
+                IncreaseCD4Count(self.parameters),
+                AddNewUser(self.parameters),
+                KillInCare(self.parameters),
+                LoseToFollowUp(self.parameters),
+                DecreaseCD4Count(self.parameters),
+                KillInCare(self.parameters),
+                Reengage(self.parameters),
+                append_new,
+            ]
+        )
+
+    def __call__(self, population):
+        return self.events(population)

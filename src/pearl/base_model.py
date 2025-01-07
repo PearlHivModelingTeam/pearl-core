@@ -1,1 +1,12 @@
-# TODO create base model from population and events
+from pearl.engine import Pearl
+from pearl.events import PearlEvents
+from pearl.population import PearlPopulation
+
+
+class BasePearl(Pearl):
+    def __init__(self, parameters):
+        super().__init__(
+            parameters,
+            population_generator=PearlPopulation(parameters),
+            events=PearlEvents(parameters),
+        )

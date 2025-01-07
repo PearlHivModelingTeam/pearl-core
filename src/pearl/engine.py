@@ -34,17 +34,26 @@ EventType: TypeAlias = Union[Event, EventGrouping, EventFunction]
 
 
 class Pearl:
-    def __init__(self, parameters: Parameters, population_generator: EventType):
+    def __init__(
+        self,
+        parameters: Parameters,
+        population_generator: EventType,
+        events: EventType,
+        before_run_events: EventType = None,
+        after_run_events: EventType = None,
+    ):
         self.parameters = parameters
         self.population_generator = population_generator
-        self.before_run: EventType | None = None
-        self.after_run: EventType | None = None
-        self.events: EventType | None = None
+        self.before_run_events: EventType | None = before_run_events
+        self.after_run_events: EventType | None = after_run_events
+        self.events: EventType | None = events
 
         self.population = self.population_generator(pd.DataFrame([]))
 
     def run(self):
-        self.population = self.before_run(self.population)
+        if self.before_run_events is not None:
+            self.population = self.before_run_events(self.population)
         for _ in range(self.parameters.final_year - self.parameters.start_year):
             self.population = self.events(self.population)
-        self.population = self.after_run(self.population)
+        if self.after_run_events is not None:
+            self.population = self.after_run_events(self.population)
