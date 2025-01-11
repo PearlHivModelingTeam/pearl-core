@@ -37,6 +37,7 @@ def test_parameters(param_file_path):
         replication=42,
         group_name="msm_black_male",
         new_dx="base",
+        start_year=2009,
         final_year=2015,
         mortality_model="by_sex_race_risk",
         mortality_threshold_flag=1,
