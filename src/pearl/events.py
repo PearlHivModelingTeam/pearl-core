@@ -418,7 +418,7 @@ class ComorbidityIncidence(Event):
                 population[f"t_{condition}"] + new * self.parameters.year, dtype="int16"
             )
 
-            return population
+        return population
 
 
 class KillInCare(Event):
