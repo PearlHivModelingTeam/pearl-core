@@ -1,5 +1,8 @@
+from typing import Optional
+
 import numpy as np
 import pandas as pd
+from typing_extensions import override
 
 from pearl.definitions import (
     ART_NAIVE,
@@ -18,7 +21,7 @@ from pearl.parameters import Parameters
 from pearl.sample import draw_from_trunc_norm
 
 
-def add_id(population):
+def add_id(population: pd.DataFrame) -> pd.DataFrame:
     population["id"] = np.array(range(population.index.size))
     population = population.set_index(["age_cat", "id"]).sort_index()
     return population
@@ -79,7 +82,7 @@ def add_default_columns(population: pd.DataFrame) -> pd.DataFrame:
     return population
 
 
-def add_default_columns_new(population: pd.DataFrame):
+def add_default_columns_new(population: pd.DataFrame) -> pd.DataFrame:
     # Calculate time varying cd4 count and other needed variables
     population["last_h1yy"] = population["h1yy"]
     population["time_varying_sqrtcd4n"] = population["init_sqrtcd4n"]
@@ -96,7 +99,7 @@ def add_default_columns_new(population: pd.DataFrame):
     return population
 
 
-def delta_bmi(population):
+def delta_bmi(population: pd.DataFrame) -> pd.DataFrame:
     population["delta_bmi"] = population["post_art_bmi"] - population["pre_art_bmi"]
     return population
 
@@ -118,17 +121,20 @@ def cast_type(population: pd.DataFrame) -> pd.DataFrame:
 
 
 class Status(Event):
-    def __init__(self, parameters, status: str):
+    def __init__(self, parameters: Parameters, status: int) -> None:
         super().__init__(parameters)
         self.status = status
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         population["status"] = self.status
         return population
 
 
 class SimulateAges(Event):
-    def __init__(self, parameters: Parameters, population_size: int, h1yy=None) -> None:
+    def __init__(
+        self, parameters: Parameters, population_size: int, h1yy: Optional[bool] = None
+    ) -> None:
         super().__init__(parameters)
         self.population_size = population_size
         self.h1yy = h1yy
@@ -137,6 +143,7 @@ class SimulateAges(Event):
         else:
             self.coeffs = self.parameters.age_in_2009
 
+    @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         # Draw population size of each normal from the binomial distribution
         pop_size_1 = self.random_state.binomial(
@@ -169,11 +176,12 @@ class SimulateAges(Event):
 
 
 class H1yy(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
         self.coeffs = self.parameters.h1yy_by_age_2009
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         # Assign H1YY to match NA-ACCORD distribution from h1yy_by_age_2009
         for age_cat, grouped in population.groupby("age_cat"):
             h1yy_data = self.coeffs.loc[age_cat].reset_index()
@@ -192,11 +200,12 @@ class H1yy(Event):
 
 
 class SqrtCd4nInit(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
         self.coeffs = self.parameters.cd4n_by_h1yy_2009
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         # For each h1yy draw values of sqrt_cd4n from a normal truncated at 0 and sqrt 2000
         for h1yy, group in population.groupby(level=0):
             mu = self.coeffs.loc[(h1yy, "mu"), "estimate"]
@@ -212,10 +221,11 @@ class SqrtCd4nInit(Event):
 
 
 class SqrtCd4nNew(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         population = population.reset_index()
         unique_h1yy = population["h1yy"].unique()
         population["init_sqrtcd4n"] = 0.0
@@ -233,13 +243,14 @@ class SqrtCd4nNew(Event):
 
 
 class Cd4Increase(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.knots = self.parameters.cd4_increase_knots
         self.coeffs = self.parameters.cd4_increase.to_numpy(dtype=float)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         pop = population.copy()
         # Calculate spline variables
         pop["time_from_h1yy"] = pop["year"] - pop["last_h1yy"]
@@ -308,7 +319,7 @@ class Cd4Increase(Event):
 
 
 class PreArtBMI(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
         self.coeffs = self.parameters.pre_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.pre_art_bmi_age_knots.to_numpy(dtype=float)
@@ -316,7 +327,8 @@ class PreArtBMI(Event):
         self.rse = self.parameters.pre_art_bmi_rse
         self.model = self.parameters.pre_art_bmi_model
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         pop = population.copy()
         pre_art_bmi = np.nan
         if self.model == 6:
@@ -395,7 +407,7 @@ class PreArtBMI(Event):
 
 
 class PostArtBMI(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
         self.coeffs = self.parameters.post_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.post_art_bmi_age_knots.to_numpy(dtype=float)
@@ -404,7 +416,8 @@ class PostArtBMI(Event):
         self.t_sqrtcd4_post = self.parameters.post_art_bmi_cd4_post_knots.to_numpy(dtype=float)
         self.rse = self.parameters.post_art_bmi_rse
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         pop = population.copy()
         # Calculate spline variables
 
@@ -495,23 +508,25 @@ class BasePopulation(Event):
             ]
         )
 
+    @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class Bmi(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
         self.events = EventGrouping(
             [PreArtBMI(self.parameters), PostArtBMI(self.parameters), delta_bmi]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class Comorbidity(Event):
-    def __init__(self, parameters, comorbidity: str, user: bool, new_init: bool):
+    def __init__(self, parameters: Parameters, comorbidity: str, user: bool, new_init: bool):
         super().__init__(parameters)
         self.comorbidity = comorbidity
         self.new_init = new_init
@@ -522,7 +537,8 @@ class Comorbidity(Event):
         )
         self.user = user
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         population[self.comorbidity] = (
             self.random_state.rand(len(population.index)) < self.probability
         ).astype(int)
@@ -534,7 +550,7 @@ class Comorbidity(Event):
 
 
 class ApplyComorbidities(Event):
-    def __init__(self, paramaters, user: bool, new_init: bool):
+    def __init__(self, paramaters: Parameters, user: bool, new_init: bool) -> None:
         super().__init__(paramaters)
         self.user = user
         self.new_init = new_init
@@ -546,18 +562,20 @@ class ApplyComorbidities(Event):
             ]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class Ltfu(Event):
-    def __init__(self, parameters, population_size: int):
+    def __init__(self, parameters: Parameters, population_size: int) -> None:
         super().__init__(parameters)
         self.population_size = population_size
         self.coeffs = self.parameters.years_out_of_care["years"]
         self.probability = self.parameters.years_out_of_care["probability"]
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         years_out_of_care = self.random_state.choice(
             a=self.coeffs,
             size=self.population_size,
@@ -573,10 +591,11 @@ class Ltfu(Event):
 
 
 class YearsOutCare(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         # Generate number of years for delayed initiators to wait before beginning care and modify
         # their start year accordingly
         delayed = population["status"] == DELAYED
@@ -592,10 +611,11 @@ class YearsOutCare(Event):
 
 
 class NewAges(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         for h1yy in self.parameters.age_by_h1yy.index.levels[0]:
             grouped_pop = pd.DataFrame()
             n_initiators = self.parameters.n_new_agents.loc[h1yy, "art_initiators"]
@@ -630,12 +650,13 @@ class UserPopInit(Event):
             ]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class NonUserPopInit(Event):
-    def __init__(self, parameters, population_size: int):
+    def __init__(self, parameters: Parameters, population_size: int) -> None:
         super().__init__(parameters)
         self.population_size = population_size
 
@@ -652,12 +673,13 @@ class NonUserPopInit(Event):
             ]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class NewPopulation(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
         self.events = EventGrouping(
@@ -678,19 +700,21 @@ class NewPopulation(Event):
             ]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)
 
 
 class PearlPopulation(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.user_pop = UserPopInit(self.parameters, self.parameters.n_initial_users)
         self.non_user_pop = NonUserPopInit(self.parameters, self.parameters.n_initial_nonusers)
         self.new_pop = NewPopulation(self.parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         user_pop = self.user_pop(pd.DataFrame([]))
         non_user_pop = self.non_user_pop(pd.DataFrame([]))
         new_pop = self.new_pop(pd.DataFrame([]))

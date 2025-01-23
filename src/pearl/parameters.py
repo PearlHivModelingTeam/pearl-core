@@ -382,10 +382,11 @@ class Parameters:
         the model each year as art users and non-users as a dataframe. Draw number of new diagnoses
         from a uniform distribution between upper and lower bounds. Calculate number of new art
         initiators by assuming a certain number link in the first year as estimated by a linear
-        regression on CDC data, capped at 95%. We assume that 40% of the remaining population links to
-        care over the next 3 years. We assume that 70% of those linking to care begin ART, rising
-        to 85% in 2011 and 97% afterwards. We take the number of people not initiating ART 2006 - 2009
-        in this calculation to be the out of care population size in 2009 for our simulation.
+        regression on CDC data, capped at 95%. We assume that 40% of the remaining population links
+        to care over the next 3 years. We assume that 70% of those linking to care begin ART,
+        rising to 85% in 2011 and 97% afterwards. We take the number of people not initiating ART
+        2006 - 2009 in this calculation to be the out of care population size in 2009 for our
+        simulation.
 
         Parameters
         ----------
@@ -397,8 +398,8 @@ class Parameters:
         Returns
         -------
         Tuple[int, pd.DataFrame]
-            (number of ART non-users in 2009 as an integer, number of agents entering the model each
-            year as art users and non-users as a dataframe)
+            (number of ART non-users in 2009 as an integer, number of agents entering the model
+            each year as art users and non-users as a dataframe)
         """
         new_dx = self.new_dx.copy()
         linkage_to_care = self.linkage_to_care

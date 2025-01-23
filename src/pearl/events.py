@@ -5,6 +5,7 @@ from typing import Any, Optional
 import numpy as np
 from numpy.typing import NDArray
 import pandas as pd
+from typing_extensions import override
 
 from pearl.calculations import calculate_prob
 from pearl.definitions import (
@@ -320,10 +321,11 @@ def calculate_cd4_increase(pop: pd.DataFrame, parameters: Parameters) -> NDArray
 
 
 class AddNewUser(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Add newly initiating ART users."""
         new_user = (population["status"] == ART_NAIVE) & (
             population["h1yy"] == self.parameters.year
@@ -334,10 +336,11 @@ class AddNewUser(Event):
 
 
 class IncreaseCD4Count(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate and set new CD4 count for ART using population."""
         in_care = population["status"] == ART_USER
 
@@ -349,9 +352,10 @@ class IncreaseCD4Count(Event):
 
 
 class IncrementYear(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
+    @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """
         Increment calendar year for all agents, increment age and age_cat for those alive in the
@@ -372,14 +376,15 @@ class IncrementYear(Event):
 
 
 class ComorbidityIncidence(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.coeff = self.parameters.comorbidity_coeff_dict
         self.sa_variables = parameters.sa_variables
         self.sa_scalars = parameters.sa_scalars
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate probability of incidence of all comorbidities and then draw to determine which
         agents experience incidence. Record incidence data stratified by care status and age
         category.
@@ -422,14 +427,15 @@ class ComorbidityIncidence(Event):
 
 
 class KillInCare(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.coeff = parameters.mortality_in_care_co
         self.mortality_threshold_flag = parameters.mortality_threshold_flag
         self.mortality_threshold = parameters.mortality_threshold
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate probability of mortality for in care population. Optionally, use the general
         population mortality threshold to increase age category grouped probability of mortality to
         have the same mean as the general population. Draw random numbers to determine
@@ -482,12 +488,13 @@ class KillInCare(Event):
 
 
 class LoseToFollowUp(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.coeff = parameters.loss_to_follow_up
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate probability of in care agents leaving care. Draw random number to decide who
         leaves care. For those leaving care, draw the number of years to spend out of care from a
         normalized, truncated Poisson distribution.
@@ -525,10 +532,11 @@ class LoseToFollowUp(Event):
 
 
 class DecreaseCD4Count(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate and set new CD4 count for ART non-using population."""
         out_care = population["status"] == ART_NONUSER
         new_sqrt_cd4 = calculate_cd4_decrease(population.loc[out_care].copy(), self.parameters)
@@ -539,14 +547,15 @@ class DecreaseCD4Count(Event):
 
 
 class KillOutCare(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters) -> None:
         super().__init__(parameters)
 
         self.coeff = parameters.mortality_out_care_co
         self.mortality_threshold_flag = self.parameters.mortality_threshold_flag
         self.mortality_threshold = parameters.mortality_threshold
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Calculate probability of mortality for out of care population. Optionally, use the
         general population mortality threshold to increase age category grouped probability of
         mortality to have the same mean as the general population. Draw random
@@ -597,10 +606,11 @@ class KillOutCare(Event):
 
 
 class Reengage(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Move out of care population scheduled to reenter care."""
         out_care = population["status"] == ART_NONUSER
         reengaged = (self.parameters.year == population["return_year"]) & out_care
@@ -618,7 +628,7 @@ class Reengage(Event):
 
 
 class PearlEvents(Event):
-    def __init__(self, parameters):
+    def __init__(self, parameters: Parameters):
         super().__init__(parameters)
 
         self.events = EventGrouping(
@@ -637,5 +647,6 @@ class PearlEvents(Event):
             ]
         )
 
-    def __call__(self, population):
+    @override
+    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         return self.events(population)

@@ -39,18 +39,18 @@ class Pearl:
         parameters: Parameters,
         population_generator: EventType,
         events: EventType,
-        before_run_events: EventType = None,
-        after_run_events: EventType = None,
+        before_run_events: EventType | None = None,
+        after_run_events: EventType | None = None,
     ):
         self.parameters = parameters
         self.population_generator = population_generator
         self.before_run_events: EventType | None = before_run_events
         self.after_run_events: EventType | None = after_run_events
-        self.events: EventType | None = events
+        self.events: EventType = events
 
         self.population = self.population_generator(pd.DataFrame([]))
 
-    def run(self):
+    def run(self) -> None:
         if self.before_run_events is not None:
             self.population = self.before_run_events(self.population)
         for _ in range(self.parameters.final_year - self.parameters.start_year):
