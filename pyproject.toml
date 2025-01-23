@@ -3,11 +3,14 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ProjectName"
-description = "Description of package"
+name = "pearl"
+description = "PEARL HIV model engine and core functions"
 readme = "README.rst"
 version = "1.0.0"
 dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
 ]
 requires-python = ">= 3.11"
 
