@@ -22,6 +22,18 @@ from pearl.sample import draw_from_trunc_norm
 
 
 def add_id(population: pd.DataFrame) -> pd.DataFrame:
+    """Add an id column to the population DataFrame.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Population DataFrame with id column added.
+    """
     population["id"] = np.array(range(population.index.size))
     population = population.set_index(["age_cat", "id"]).sort_index()
     return population
@@ -100,41 +112,125 @@ def add_default_columns_new(population: pd.DataFrame) -> pd.DataFrame:
 
 
 def delta_bmi(population: pd.DataFrame) -> pd.DataFrame:
+    """Calculate the change in BMI for each agent.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Population DataFrame with delta_bmi column added.
+    """
     population["delta_bmi"] = population["post_art_bmi"] - population["pre_art_bmi"]
     return population
 
 
 def add_multimorbidity(population: pd.DataFrame) -> pd.DataFrame:
+    """Calculate the multimorbidity for each agent.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Population DataFrame with mm column added.
+    """
     population["mm"] = np.array(population[STAGE2 + STAGE3].sum(axis=1), dtype="int8")
     return population
 
 
 def sort_alphabetically(population: pd.DataFrame) -> pd.DataFrame:
+    """Sort columns alphabetically.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Population DataFrame with columns sorted alphabetically.
+    """
     # Sort columns alphabetically
     population = population.reindex(sorted(population), axis=1)
     return population
 
 
 def cast_type(population: pd.DataFrame) -> pd.DataFrame:
+    """Cast population columns to save memory.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Type cast population Dataframe.
+    """
     population = population.astype(POPULATION_TYPE_DICT)
     return population
 
 
 class Status(Event):
+    """Assign a status to the populaton.
+    """
     def __init__(self, parameters: Parameters, status: int) -> None:
+        """Store parameters and status.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        status : int
+            Status defined in pearl.definitions
+        """
         super().__init__(parameters)
         self.status = status
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Assign status to the population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population DataFrame with status column added.
+        """
         population["status"] = self.status
         return population
 
 
 class SimulateAges(Event):
+    """Simulate ages for the given popeulation size and conditions.
+    """
     def __init__(
         self, parameters: Parameters, population_size: int, h1yy: Optional[bool] = None
     ) -> None:
+        """
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        population_size : int
+            Size of the population to simulate.
+        h1yy : Optional[bool], optional
+            Whether or not to simulate ages by h1yy, by default None
+        """
         super().__init__(parameters)
         self.population_size = population_size
         self.h1yy = h1yy
@@ -145,6 +241,19 @@ class SimulateAges(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Simulate ages.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            This dataframe is ignored. It currently just serves to maintain the Dataframe in 
+            Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population of simulated ages.
+        """
         # Draw population size of each normal from the binomial distribution
         pop_size_1 = self.random_state.binomial(
             self.population_size, self.coeffs.loc["lambda1", "estimate"]
@@ -176,12 +285,33 @@ class SimulateAges(Event):
 
 
 class H1yy(Event):
+    """Assign diagnosis date (H1yy) to the population.
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters and coefficients.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
         self.coeffs = self.parameters.h1yy_by_age_2009
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Assign H1yy to the population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population DataFrame with h1yy column added.
+        """
         # Assign H1YY to match NA-ACCORD distribution from h1yy_by_age_2009
         for age_cat, grouped in population.groupby("age_cat"):
             h1yy_data = self.coeffs.loc[age_cat].reset_index()
@@ -200,12 +330,33 @@ class H1yy(Event):
 
 
 class SqrtCd4nInit(Event):
+    """Assign initial sqrtCD4 counts to the population.
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters and coefficients.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
         self.coeffs = self.parameters.cd4n_by_h1yy_2009
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Assign initial CD4 counts to the population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with init_sqrtcd4n column added.
+        """
         # For each h1yy draw values of sqrt_cd4n from a normal truncated at 0 and sqrt 2000
         for h1yy, group in population.groupby(level=0):
             mu = self.coeffs.loc[(h1yy, "mu"), "estimate"]
@@ -221,11 +372,32 @@ class SqrtCd4nInit(Event):
 
 
 class SqrtCd4nNew(Event):
+    """Assign sqrtCD4 counts to new agents.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Store Parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Assign sqrtCD4 counts to new agents.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Datafame.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with sqrtcd4n column added.
+        """
         population = population.reset_index()
         unique_h1yy = population["h1yy"].unique()
         population["init_sqrtcd4n"] = 0.0
@@ -243,7 +415,16 @@ class SqrtCd4nNew(Event):
 
 
 class Cd4Increase(Event):
+    """Calculate the increase in CD4 count for the population.
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters, knot coefficients, and coefficients.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
 
         self.knots = self.parameters.cd4_increase_knots
@@ -251,6 +432,18 @@ class Cd4Increase(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Increase CD4 count for the population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with increased CD4 count.
+        """
         pop = population.copy()
         # Calculate spline variables
         pop["time_from_h1yy"] = pop["year"] - pop["last_h1yy"]
@@ -319,7 +512,16 @@ class Cd4Increase(Event):
 
 
 class PreArtBMI(Event):
+    """Calculate pre-ART BMI for the population.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Store parameters and coefficients.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
         self.coeffs = self.parameters.pre_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.pre_art_bmi_age_knots.to_numpy(dtype=float)
@@ -329,6 +531,18 @@ class PreArtBMI(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Calculate pre-art BMI and addd pre_art_bmi column
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with pre_art_bmi column added.
+        """
         pop = population.copy()
         pre_art_bmi = np.nan
         if self.model == 6:
@@ -407,7 +621,11 @@ class PreArtBMI(Event):
 
 
 class PostArtBMI(Event):
+    """Calculate Post-ART BMI for the population.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Store parameters and coefficients.
+        """
         super().__init__(parameters)
         self.coeffs = self.parameters.post_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.post_art_bmi_age_knots.to_numpy(dtype=float)
@@ -418,6 +636,18 @@ class PostArtBMI(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Calculate post-ART BMI for the population and add post_art_bmi column.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with post_art_bmi column added.
+        """
         pop = population.copy()
         # Calculate spline variables
 
@@ -492,7 +722,18 @@ class PostArtBMI(Event):
 
 
 class BasePopulation(Event):
+    """Base population object.
+    """
     def __init__(self, parameters: Parameters, population_size: int):
+        """Store parameters, the population size, and the events to be applied.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        population_size : int
+            Size of population to simulate.
+        """
         super().__init__(parameters)
         self.population_size = population_size
 
@@ -510,11 +751,33 @@ class BasePopulation(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Return the base population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            This dataframe is ignored. It currently just serves to maintain the Dataframe in
+            Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe for the base population.
+        """
         return self.events(population)
 
 
 class Bmi(Event):
+    """Calculate all BMI related variables.
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters and PreArtBMI, PostArtBMI, and delta_bmi events.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        """
         super().__init__(parameters)
         self.events = EventGrouping(
             [PreArtBMI(self.parameters), PostArtBMI(self.parameters), delta_bmi]
@@ -522,11 +785,40 @@ class Bmi(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Run all events.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with BMI related variables added.
+        """
         return self.events(population)
 
 
 class Comorbidity(Event):
+    """Assign comorbidities for a random subset of the population based on each agents 
+    characteristics.
+    """
     def __init__(self, parameters: Parameters, comorbidity: str, user: bool, new_init: bool):
+        """Store parameters, comorbidity, whether or not the population is ART users, and whether
+        or not the population is new initiators.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        comorbidity : str
+            Comorbidity to assign.
+        user : bool
+            Whether or not the population is ART users.
+        new_init : bool
+            Whether or not the population is new initiators.
+        """
         super().__init__(parameters)
         self.comorbidity = comorbidity
         self.new_init = new_init
@@ -539,6 +831,18 @@ class Comorbidity(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Assign comorbidity
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+           Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with comorbidity assigned.
+        """
         population[self.comorbidity] = (
             self.random_state.rand(len(population.index)) < self.probability
         ).astype(int)
@@ -550,7 +854,20 @@ class Comorbidity(Event):
 
 
 class ApplyComorbidities(Event):
+    """Apply all comorbidities sequentially
+    """
     def __init__(self, paramaters: Parameters, user: bool, new_init: bool) -> None:
+        """_summary_
+
+        Parameters
+        ----------
+        paramaters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters
+        user : bool
+            Whether or not the population is ART users.
+        new_init : bool
+            Whether or not the population is new initiators.
+        """
         super().__init__(paramaters)
         self.user = user
         self.new_init = new_init
@@ -564,11 +881,34 @@ class ApplyComorbidities(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Run the sequence of events.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+           Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with comorbidities assigned.
+        """
         return self.events(population)
 
 
 class Ltfu(Event):
+    """Lost to follow up event.
+    """
     def __init__(self, parameters: Parameters, population_size: int) -> None:
+        """Store parameters and population size.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        population_size : int
+            Size of the population.
+        """
         super().__init__(parameters)
         self.population_size = population_size
         self.coeffs = self.parameters.years_out_of_care["years"]
@@ -576,6 +916,18 @@ class Ltfu(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Lose a subset of population to follow up.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe adjusted after loss to follow up.
+        """
         years_out_of_care = self.random_state.choice(
             a=self.coeffs,
             size=self.population_size,
@@ -591,13 +943,34 @@ class Ltfu(Event):
 
 
 class YearsOutCare(Event):
+    """Calculate years out of care for delayed start agents.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Store parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
-        # Generate number of years for delayed initiators to wait before beginning care and modify
-        # their start year accordingly
+        """Generate number of years for delayed initiators to wait before beginning care and modify
+        their start year accordingly
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population Dataframe.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with  years out of care adjustment.
+        """
+
         delayed = population["status"] == DELAYED
         years_out_of_care = self.random_state.choice(
             a=self.parameters.years_out_of_care["years"],
@@ -611,11 +984,32 @@ class YearsOutCare(Event):
 
 
 class NewAges(Event):
+    """Simulate ages for new initiators.
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Simulate ages by h1yy for new initiators.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Unused population Dataframe to keep the Dataframe in Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population Dataframe with simulated ages.
+        """
         for h1yy in self.parameters.age_by_h1yy.index.levels[0]:
             grouped_pop = pd.DataFrame()
             n_initiators = self.parameters.n_new_agents.loc[h1yy, "art_initiators"]
@@ -634,7 +1028,18 @@ class NewAges(Event):
 
 
 class UserPopInit(Event):
+    """Population generator for ART users.
+    """
     def __init__(self, parameters: Parameters, population_size: int):
+        """Store parameters, population size, and events to be applied.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        population_size : int
+            Size of population to simulate.
+        """
         super().__init__(parameters)
         self.population_size = population_size
 
@@ -652,11 +1057,34 @@ class UserPopInit(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Generate population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Unused population Dataframe to keep the Dataframe in Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            ART user population.
+        """
         return self.events(population)
 
 
 class NonUserPopInit(Event):
+    """Population generator for ART non-users.
+    """
     def __init__(self, parameters: Parameters, population_size: int) -> None:
+        """Store parameters, population size, and events to be applied.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        population_size : int
+            Size of population to simulate.
+        """
         super().__init__(parameters)
         self.population_size = population_size
 
@@ -675,11 +1103,30 @@ class NonUserPopInit(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Generate population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Unused population Dataframe to keep the Dataframe in Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            ART non-user population.
+        """
         return self.events(population)
 
 
 class NewPopulation(Event):
     def __init__(self, parameters: Parameters) -> None:
+        """Store parameters and events to be applied.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.events = EventGrouping(
@@ -702,11 +1149,32 @@ class NewPopulation(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Generate population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Unused population Dataframe to keep the Dataframe in Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            New ART user population.
+        """
         return self.events(population)
 
 
 class PearlPopulation(Event):
+    """Base PEARL population generator
+    """
     def __init__(self, parameters: Parameters):
+        """Store parameters, as well as user, non-user, and new population generators.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters object definining a run as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.user_pop = UserPopInit(self.parameters, self.parameters.n_initial_users)
@@ -715,6 +1183,18 @@ class PearlPopulation(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Return the full PEARL base population.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Unused population Dataframe to keep the Dataframe in Dataframe out API.
+
+        Returns
+        -------
+        pd.DataFrame
+            Base PEARL population.
+        """
         user_pop = self.user_pop(pd.DataFrame([]))
         non_user_pop = self.non_user_pop(pd.DataFrame([]))
         new_pop = self.new_pop(pd.DataFrame([]))
