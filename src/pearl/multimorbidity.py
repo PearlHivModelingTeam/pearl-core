@@ -13,6 +13,18 @@ from pearl.parameters import Parameters
 
 
 def create_mm_detail_stats(pop: pd.DataFrame) -> pd.DataFrame:
+    """Count the number of people with each unique set of comorbidities.
+
+    Parameters
+    ----------
+    pop : pd.DataFrame
+        Population Dataframe.
+
+    Returns
+    -------
+    pd.DataFrame
+        Count of the number of people with each unique set of comorbidities.
+    """
     all_comorbidities = STAGE0 + STAGE1 + STAGE2 + STAGE3
     df = pop[["age_cat"] + all_comorbidities].copy()
     # Count how many people have each unique set of comorbidities

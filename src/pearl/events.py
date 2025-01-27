@@ -321,7 +321,16 @@ def calculate_cd4_increase(pop: pd.DataFrame, parameters: Parameters) -> NDArray
 
 
 class AddNewUser(Event):
+    """Add new users to the PEARL model.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Init super class with parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
@@ -336,7 +345,16 @@ class AddNewUser(Event):
 
 
 class IncreaseCD4Count(Event):
+    """Increase CD4 count for agents in the PEARL model.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Init super class with parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
@@ -352,7 +370,16 @@ class IncreaseCD4Count(Event):
 
 
 class IncrementYear(Event):
+    """Increment the year of the model by one.
+    """
     def __init__(self, parameters: Parameters):
+        """Init super class with parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
@@ -376,7 +403,17 @@ class IncrementYear(Event):
 
 
 class ComorbidityIncidence(Event):
+    """Calculate the incidence of the comombidities in the PEARL model for that year.
+    """
     def __init__(self, parameters: Parameters):
+        """Initiatialize object with required parameters. Store necessary parameters as class
+        attributes.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.coeff = self.parameters.comorbidity_coeff_dict
@@ -427,7 +464,17 @@ class ComorbidityIncidence(Event):
 
 
 class KillInCare(Event):
+    """Assign mortality to a portion of the in care population.
+    """
     def __init__(self, parameters: Parameters):
+        """Initiatialize object with required parameters. Store necessary parameters as class
+        attributes.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.coeff = parameters.mortality_in_care_co
@@ -488,7 +535,17 @@ class KillInCare(Event):
 
 
 class LoseToFollowUp(Event):
+    """Assign some agentsto lost to follow up.
+    """
     def __init__(self, parameters: Parameters):
+        """Initiatialize object with required parameters. Store necessary parameters as class
+        attributes.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.coeff = parameters.loss_to_follow_up
@@ -532,7 +589,16 @@ class LoseToFollowUp(Event):
 
 
 class DecreaseCD4Count(Event):
+    """Calculate the decrease in CD4 count for ART non-using population
+    """
     def __init__(self, parameters: Parameters):
+        """Init super class with parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
@@ -547,7 +613,17 @@ class DecreaseCD4Count(Event):
 
 
 class KillOutCare(Event):
+    """Assign mortality to a portion of agents out of care.
+    """
     def __init__(self, parameters: Parameters) -> None:
+        """Initiatialize object with required parameters. Store necessary parameters as class
+        attributes.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.coeff = parameters.mortality_out_care_co
@@ -606,7 +682,16 @@ class KillOutCare(Event):
 
 
 class Reengage(Event):
+    """Reengage a portion of the out of care population.
+    """
     def __init__(self, parameters: Parameters):
+        """Init super class with parameters.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
     @override
@@ -628,7 +713,18 @@ class Reengage(Event):
 
 
 class PearlEvents(Event):
+    """Base Pearl events
+    """
     def __init__(self, parameters: Parameters):
+        """Init super class with parameters.
+        
+        Store the base pearl events as an EventGrouping object.
+
+        Parameters
+        ----------
+        parameters : Parameters
+            Parameters as defined in pearl.parameters.Parameters.
+        """
         super().__init__(parameters)
 
         self.events = EventGrouping(
@@ -649,4 +745,16 @@ class PearlEvents(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
+        """Runs a single year of the base PEARL model.
+
+        Parameters
+        ----------
+        population : pd.DataFrame
+            Population before the events are applied.
+
+        Returns
+        -------
+        pd.DataFrame
+            Population after the events are applied.
+        """
         return self.events(population)
