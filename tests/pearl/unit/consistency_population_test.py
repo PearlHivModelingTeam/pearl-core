@@ -14,11 +14,6 @@ from pearl.population import PearlPopulation
 
 
 @fixture
-def param_file_path():
-    return Path("tests/pearl/assets/parameters.h5")
-
-
-@fixture
 def expected_population():
     population = pd.read_parquet(
         Path("tests/pearl/assets/consistency_population_test/before_run_population.parquet")
@@ -30,9 +25,8 @@ def expected_population():
 
 
 @fixture
-def test_parameters(param_file_path):
+def test_parameters():
     return Parameters(
-        path=param_file_path,
         output_folder=None,
         replication=42,
         group_name="msm_black_male",

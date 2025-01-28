@@ -24,11 +24,6 @@ from pearl.parameters import Parameters
 
 
 @fixture
-def param_file_path():
-    return Path("tests/pearl/assets/parameters.h5")
-
-
-@fixture
 def config():
     config = {
         "new_dx": "base",
@@ -42,9 +37,8 @@ def config():
 
 
 @fixture
-def increment_years_parameters(param_file_path: Path, config: dict[str, Any]):
+def increment_years_parameters(config: dict[str, Any]):
     return Parameters(
-        path=param_file_path,
         output_folder=None,
         replication=1,
         group_name="msm_black_male",
@@ -101,9 +95,8 @@ def random_state():
 
 
 @fixture
-def parameters(param_file_path: Path, config: dict[str, Any]):
+def parameters(config: dict[str, Any]):
     parameters = Parameters(
-        path=param_file_path,
         output_folder=None,
         replication=1,
         group_name="msm_black_male",

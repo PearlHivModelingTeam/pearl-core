@@ -8,11 +8,19 @@ description = "PEARL HIV model engine and core functions"
 readme = "README.rst"
 version = "1.0.0"
 dependencies = [
-    "numpy",
+    "numpy<=2.0",
     "pandas",
     "scipy",
+    "numba",
 ]
 requires-python = ">= 3.11"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytables",
+    "fastparquet"
+]
 
 [tool.mypy]
 ignore_missing_imports = true

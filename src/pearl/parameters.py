@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
-from pearl.definitions import STAGE0, STAGE1, STAGE2, STAGE3
+from pearl.definitions import ROOT_DIR, STAGE0, STAGE1, STAGE2, STAGE3
 
 
 class Parameters:
@@ -16,7 +16,6 @@ class Parameters:
 
     def __init__(
         self,
-        path: Path,
         output_folder: Path,
         replication: int,
         group_name: str,
@@ -48,8 +47,6 @@ class Parameters:
 
         Parameters
         ----------
-        path : Path
-            Path to parameters.h5 files that contains all necessary coefficient values.
         output_folder : Path
             Folder to write simulation outputs to.
         replication : int
@@ -114,6 +111,7 @@ class Parameters:
             raise ValueError("group_name not supported")
 
         # Save inputs as class attributes
+        self.parameters_path = ROOT_DIR / "parameter_weights/parameters.h5"
         self.output_folder = output_folder
         self.replication = replication
         self.group_name = group_name
@@ -138,20 +136,24 @@ class Parameters:
         self.sa_variables = sa_variables
 
         # 2009 population
-        self.on_art_2009 = pd.read_hdf(path, "on_art_2009").loc[group_name]
-        self.age_in_2009 = pd.read_hdf(path, "age_in_2009").loc[group_name]
-        self.h1yy_by_age_2009 = pd.read_hdf(path, "h1yy_by_age_2009").loc[group_name]
-        self.cd4n_by_h1yy_2009 = pd.read_hdf(path, "cd4n_by_h1yy_2009").loc[group_name]
+        self.on_art_2009 = pd.read_hdf(self.parameters_path, "on_art_2009").loc[group_name]
+        self.age_in_2009 = pd.read_hdf(self.parameters_path, "age_in_2009").loc[group_name]
+        self.h1yy_by_age_2009 = pd.read_hdf(self.parameters_path, "h1yy_by_age_2009").loc[
+            group_name
+        ]
+        self.cd4n_by_h1yy_2009 = pd.read_hdf(self.parameters_path, "cd4n_by_h1yy_2009").loc[
+            group_name
+        ]
 
         # New initiator statistics
-        self.linkage_to_care = pd.read_hdf(path, "linkage_to_care").loc[group_name]
-        self.age_by_h1yy = pd.read_hdf(path, "age_by_h1yy").loc[group_name]
-        self.cd4n_by_h1yy = pd.read_hdf(path, "cd4n_by_h1yy").loc[group_name]
+        self.linkage_to_care = pd.read_hdf(self.parameters_path, "linkage_to_care").loc[group_name]
+        self.age_by_h1yy = pd.read_hdf(self.parameters_path, "age_by_h1yy").loc[group_name]
+        self.cd4n_by_h1yy = pd.read_hdf(self.parameters_path, "cd4n_by_h1yy").loc[group_name]
         # Choose new ART initiator model
         if new_dx == "base":
-            self.new_dx = pd.read_hdf(path, "new_dx").loc[group_name]
+            self.new_dx = pd.read_hdf(self.parameters_path, "new_dx").loc[group_name]
         elif new_dx == "ehe":
-            self.new_dx = pd.read_hdf(path, "new_dx_ehe").loc[group_name]
+            self.new_dx = pd.read_hdf(self.parameters_path, "new_dx_ehe").loc[group_name]
         else:
             raise ValueError("Invalid new diagnosis file specified")
         # Choose mortality model
@@ -168,72 +170,98 @@ class Parameters:
             )
 
         # Mortality In Care
-        self.mortality_in_care = pd.read_hdf(path, f"mortality_in_care{mortality_model_str}").loc[
-            group_name
-        ]
+        self.mortality_in_care = pd.read_hdf(
+            self.parameters_path, f"mortality_in_care{mortality_model_str}"
+        ).loc[group_name]
         self.mortality_in_care_age = pd.read_hdf(
-            path, f"mortality_in_care_age{mortality_model_str}"
+            self.parameters_path, f"mortality_in_care_age{mortality_model_str}"
         ).loc[group_name]
         self.mortality_in_care_sqrtcd4 = pd.read_hdf(
-            path, f"mortality_in_care_sqrtcd4{mortality_model_str}"
+            self.parameters_path, f"mortality_in_care_sqrtcd4{mortality_model_str}"
         ).loc[group_name]
-        self.mortality_in_care_vcov = pd.read_hdf(path, "mortality_in_care_vcov").loc[group_name]
+        self.mortality_in_care_vcov = pd.read_hdf(
+            self.parameters_path, "mortality_in_care_vcov"
+        ).loc[group_name]
 
         # Mortality Out Of Care
         self.mortality_out_care = pd.read_hdf(
-            path, f"mortality_out_care{mortality_model_str}"
+            self.parameters_path, f"mortality_out_care{mortality_model_str}"
         ).loc[group_name]
         self.mortality_out_care_age = pd.read_hdf(
-            path, f"mortality_out_care_age{mortality_model_str}"
+            self.parameters_path, f"mortality_out_care_age{mortality_model_str}"
         ).loc[group_name]
         self.mortality_out_care_tv_sqrtcd4 = pd.read_hdf(
-            path, f"mortality_out_care_tv_sqrtcd4{mortality_model_str}"
+            self.parameters_path, f"mortality_out_care_tv_sqrtcd4{mortality_model_str}"
         ).loc[group_name]
-        self.mortality_out_care_vcov = pd.read_hdf(path, "mortality_out_care_vcov").loc[group_name]
+        self.mortality_out_care_vcov = pd.read_hdf(
+            self.parameters_path, "mortality_out_care_vcov"
+        ).loc[group_name]
 
         # Mortality Threshold
         if idu_threshold != "2x":
             self.mortality_threshold = pd.read_hdf(
-                path, f"mortality_threshold_idu_{idu_threshold}"
+                self.parameters_path, f"mortality_threshold_idu_{idu_threshold}"
             ).loc[group_name]
         else:
             self.mortality_threshold = pd.read_hdf(
-                path, f"mortality_threshold{mortality_model_str}"
+                self.parameters_path, f"mortality_threshold{mortality_model_str}"
             ).loc[group_name]
 
         # Loss To Follow Up
-        self.loss_to_follow_up = pd.read_hdf(path, "loss_to_follow_up").loc[group_name]
-        self.ltfu_knots = pd.read_hdf(path, "ltfu_knots").loc[group_name]
-        self.loss_to_follow_up_vcov = pd.read_hdf(path, "loss_to_follow_up_vcov").loc[group_name]
-
-        # Cd4 Increase
-        self.cd4_increase = pd.read_hdf(path, "cd4_increase").loc[group_name]
-        self.cd4_increase_knots = pd.read_hdf(path, "cd4_increase_knots").loc[group_name]
-        self.cd4_increase_vcov = pd.read_hdf(path, "cd4_increase_vcov").loc[group_name]
-
-        # Cd4 Decrease
-        self.cd4_decrease = pd.read_hdf(path, "cd4_decrease").loc["all"]
-        self.cd4_decrease_vcov = pd.read_hdf(path, "cd4_decrease_vcov")
-
-        # Years out of Care
-        self.years_out_of_care = pd.read_hdf(path, "years_out_of_care")
-
-        # BMI
-        self.pre_art_bmi = pd.read_hdf(path, "pre_art_bmi").loc[group_name]
-        self.pre_art_bmi_model = pd.read_hdf(path, "pre_art_bmi_model").loc[group_name].values[0]
-        self.pre_art_bmi_age_knots = pd.read_hdf(path, "pre_art_bmi_age_knots").loc[group_name]
-        self.pre_art_bmi_h1yy_knots = pd.read_hdf(path, "pre_art_bmi_h1yy_knots").loc[group_name]
-        self.pre_art_bmi_rse = pd.read_hdf(path, "pre_art_bmi_rse").loc[group_name].values[0]
-        self.post_art_bmi = pd.read_hdf(path, "post_art_bmi").loc[group_name]
-        self.post_art_bmi_age_knots = pd.read_hdf(path, "post_art_bmi_age_knots").loc[group_name]
-        self.post_art_bmi_pre_art_bmi_knots = pd.read_hdf(
-            path, "post_art_bmi_pre_art_bmi_knots"
-        ).loc[group_name]
-        self.post_art_bmi_cd4_knots = pd.read_hdf(path, "post_art_bmi_cd4_knots").loc[group_name]
-        self.post_art_bmi_cd4_post_knots = pd.read_hdf(path, "post_art_bmi_cd4_post_knots").loc[
+        self.loss_to_follow_up = pd.read_hdf(self.parameters_path, "loss_to_follow_up").loc[
             group_name
         ]
-        self.post_art_bmi_rse = pd.read_hdf(path, "post_art_bmi_rse").loc[group_name].values[0]
+        self.ltfu_knots = pd.read_hdf(self.parameters_path, "ltfu_knots").loc[group_name]
+        self.loss_to_follow_up_vcov = pd.read_hdf(
+            self.parameters_path, "loss_to_follow_up_vcov"
+        ).loc[group_name]
+
+        # Cd4 Increase
+        self.cd4_increase = pd.read_hdf(self.parameters_path, "cd4_increase").loc[group_name]
+        self.cd4_increase_knots = pd.read_hdf(self.parameters_path, "cd4_increase_knots").loc[
+            group_name
+        ]
+        self.cd4_increase_vcov = pd.read_hdf(self.parameters_path, "cd4_increase_vcov").loc[
+            group_name
+        ]
+
+        # Cd4 Decrease
+        self.cd4_decrease = pd.read_hdf(self.parameters_path, "cd4_decrease").loc["all"]
+        self.cd4_decrease_vcov = pd.read_hdf(self.parameters_path, "cd4_decrease_vcov")
+
+        # Years out of Care
+        self.years_out_of_care = pd.read_hdf(self.parameters_path, "years_out_of_care")
+
+        # BMI
+        self.pre_art_bmi = pd.read_hdf(self.parameters_path, "pre_art_bmi").loc[group_name]
+        self.pre_art_bmi_model = (
+            pd.read_hdf(self.parameters_path, "pre_art_bmi_model").loc[group_name].values[0]
+        )
+        self.pre_art_bmi_age_knots = pd.read_hdf(
+            self.parameters_path, "pre_art_bmi_age_knots"
+        ).loc[group_name]
+        self.pre_art_bmi_h1yy_knots = pd.read_hdf(
+            self.parameters_path, "pre_art_bmi_h1yy_knots"
+        ).loc[group_name]
+        self.pre_art_bmi_rse = (
+            pd.read_hdf(self.parameters_path, "pre_art_bmi_rse").loc[group_name].values[0]
+        )
+        self.post_art_bmi = pd.read_hdf(self.parameters_path, "post_art_bmi").loc[group_name]
+        self.post_art_bmi_age_knots = pd.read_hdf(
+            self.parameters_path, "post_art_bmi_age_knots"
+        ).loc[group_name]
+        self.post_art_bmi_pre_art_bmi_knots = pd.read_hdf(
+            self.parameters_path, "post_art_bmi_pre_art_bmi_knots"
+        ).loc[group_name]
+        self.post_art_bmi_cd4_knots = pd.read_hdf(
+            self.parameters_path, "post_art_bmi_cd4_knots"
+        ).loc[group_name]
+        self.post_art_bmi_cd4_post_knots = pd.read_hdf(
+            self.parameters_path, "post_art_bmi_cd4_post_knots"
+        ).loc[group_name]
+        self.post_art_bmi_rse = (
+            pd.read_hdf(self.parameters_path, "post_art_bmi_rse").loc[group_name].values[0]
+        )
 
         # BMI Intervention parameters
         if bmi_intervention_scenario not in [0, 1, 2, 3]:
@@ -250,34 +278,46 @@ class Parameters:
 
         # Comorbidities
         self.prev_users_dict = {
-            comorbidity: pd.read_hdf(path, f"{comorbidity}_prev_users").loc[group_name]
+            comorbidity: pd.read_hdf(self.parameters_path, f"{comorbidity}_prev_users").loc[
+                group_name
+            ]
             for comorbidity in STAGE0 + STAGE1 + STAGE2 + STAGE3
         }
         self.prev_inits_dict = {
-            comorbidity: pd.read_hdf(path, f"{comorbidity}_prev_inits").loc[group_name]
+            comorbidity: pd.read_hdf(self.parameters_path, f"{comorbidity}_prev_inits").loc[
+                group_name
+            ]
             for comorbidity in STAGE0 + STAGE1 + STAGE2 + STAGE3
         }
         self.comorbidity_coeff_dict = {
-            comorbidity: pd.read_hdf(path, f"{comorbidity}_coeff").loc[group_name]
+            comorbidity: pd.read_hdf(self.parameters_path, f"{comorbidity}_coeff").loc[group_name]
             for comorbidity in STAGE1 + STAGE2 + STAGE3
         }
         self.delta_bmi_dict = {
-            comorbidity: pd.read_hdf(path, f"{comorbidity}_delta_bmi").loc[group_name]
+            comorbidity: pd.read_hdf(self.parameters_path, f"{comorbidity}_delta_bmi").loc[
+                group_name
+            ]
             for comorbidity in STAGE2 + STAGE3
         }
         self.post_art_bmi_dict = {
-            comorbidity: pd.read_hdf(path, f"{comorbidity}_post_art_bmi").loc[group_name]
+            comorbidity: pd.read_hdf(self.parameters_path, f"{comorbidity}_post_art_bmi").loc[
+                group_name
+            ]
             for comorbidity in STAGE2 + STAGE3
         }
 
         # Aim 2 Mortality
-        self.mortality_in_care_co = pd.read_hdf(path, "mortality_in_care_co").loc[group_name]
+        self.mortality_in_care_co = pd.read_hdf(self.parameters_path, "mortality_in_care_co").loc[
+            group_name
+        ]
         self.mortality_in_care_post_art_bmi = pd.read_hdf(
-            path, "mortality_in_care_post_art_bmi"
+            self.parameters_path, "mortality_in_care_post_art_bmi"
         ).loc[group_name]
-        self.mortality_out_care_co = pd.read_hdf(path, "mortality_out_care_co").loc[group_name]
+        self.mortality_out_care_co = pd.read_hdf(
+            self.parameters_path, "mortality_out_care_co"
+        ).loc[group_name]
         self.mortality_out_care_post_art_bmi = pd.read_hdf(
-            path, "mortality_out_care_post_art_bmi"
+            self.parameters_path, "mortality_out_care_post_art_bmi"
         ).loc[group_name]
 
         # Year and age ranges
