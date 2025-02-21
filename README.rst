@@ -33,25 +33,9 @@ Installation and First Run
 
 Clone the repository onto your machine, enter the directory and install pearl::
 
-    git clone git@github.com:PearlHivModelingTeam/pearlModel.git
-    cd pearlModel
+    git clone https://github.com/PearlHivModelingTeam/pearl-core.git
+    cd pearl-core
     pip install .
-
-The ``scripts`` folder holds 3 numbered python scripts as well as a library with the PEARL classes 
-and variables. The python files are numbered so that they can be run one after another to run a 
-simulation. The ``config`` folder holds yaml files for specifying run configurations, the 
-``param_files`` folder holds the input parameters for use by PEARL and simulation results are 
-generated in the ``out`` folder.
-
-Finally, enter the ``scripts`` folder and run the first two numbered scripts. This will generate 
-parameters and run a simulation using the test.yaml config file. The simulation output can be found 
-in ``out/test_yyyy_mm_dd`` with the date corresponding to the initiation of the run::
-
-
-    python scripts/1_create_param_file.py
-    python scripts/2_simulate.py
-    python scripts/3_combine_parquet.py --in_dir path/to/out/dir/parquet_output
-
 
 =======================
 Development Environment
@@ -120,18 +104,7 @@ To ensure that the package is working as intended, can run the test suit with:
 
 ``pytest tests``
 
-=============
-Configuration
-=============
-
-The simulation script can be called with a command line argument pointing to a config file in order 
-to run a simulation with different parameters or attributes. A template file lives 
-``config/template.yaml`` which contains all of the options available. 
-In order to run a simulation with a specific config file simply call the simulation script as:
-```
-python 2_simulate --config my_config.yaml
-```
-and the output will be created at ``out/my_config_yyyy_mm_dd``
+TODO: add config details
 
 ^^^^^^^^^^^^^^^
 ``group_names``
