@@ -181,8 +181,8 @@ def cast_type(population: pd.DataFrame) -> pd.DataFrame:
 
 
 class Status(Event):
-    """Assign a status to the populaton.
-    """
+    """Assign a status to the populaton."""
+
     def __init__(self, parameters: Parameters, status: int) -> None:
         """Store parameters and status.
 
@@ -215,8 +215,8 @@ class Status(Event):
 
 
 class SimulateAges(Event):
-    """Simulate ages for the given popeulation size and conditions.
-    """
+    """Simulate ages for the given popeulation size and conditions."""
+
     def __init__(
         self, parameters: Parameters, population_size: int, h1yy: Optional[bool] = None
     ) -> None:
@@ -246,7 +246,7 @@ class SimulateAges(Event):
         Parameters
         ----------
         population : pd.DataFrame
-            This dataframe is ignored. It currently just serves to maintain the Dataframe in 
+            This dataframe is ignored. It currently just serves to maintain the Dataframe in
             Dataframe out API.
 
         Returns
@@ -285,8 +285,8 @@ class SimulateAges(Event):
 
 
 class H1yy(Event):
-    """Assign diagnosis date (H1yy) to the population.
-    """
+    """Assign diagnosis date (H1yy) to the population."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters and coefficients.
 
@@ -330,8 +330,8 @@ class H1yy(Event):
 
 
 class SqrtCd4nInit(Event):
-    """Assign initial sqrtCD4 counts to the population.
-    """
+    """Assign initial sqrtCD4 counts to the population."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters and coefficients.
 
@@ -372,8 +372,8 @@ class SqrtCd4nInit(Event):
 
 
 class SqrtCd4nNew(Event):
-    """Assign sqrtCD4 counts to new agents.
-    """
+    """Assign sqrtCD4 counts to new agents."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Store Parameters.
 
@@ -415,8 +415,8 @@ class SqrtCd4nNew(Event):
 
 
 class Cd4Increase(Event):
-    """Calculate the increase in CD4 count for the population.
-    """
+    """Calculate the increase in CD4 count for the population."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters, knot coefficients, and coefficients.
 
@@ -512,8 +512,8 @@ class Cd4Increase(Event):
 
 
 class PreArtBMI(Event):
-    """Calculate pre-ART BMI for the population.
-    """
+    """Calculate pre-ART BMI for the population."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Store parameters and coefficients.
 
@@ -621,11 +621,10 @@ class PreArtBMI(Event):
 
 
 class PostArtBMI(Event):
-    """Calculate Post-ART BMI for the population.
-    """
+    """Calculate Post-ART BMI for the population."""
+
     def __init__(self, parameters: Parameters) -> None:
-        """Store parameters and coefficients.
-        """
+        """Store parameters and coefficients."""
         super().__init__(parameters)
         self.coeffs = self.parameters.post_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.post_art_bmi_age_knots.to_numpy(dtype=float)
@@ -722,8 +721,8 @@ class PostArtBMI(Event):
 
 
 class BasePopulation(Event):
-    """Base population object.
-    """
+    """Base population object."""
+
     def __init__(self, parameters: Parameters, population_size: int):
         """Store parameters, the population size, and the events to be applied.
 
@@ -768,8 +767,8 @@ class BasePopulation(Event):
 
 
 class Bmi(Event):
-    """Calculate all BMI related variables.
-    """
+    """Calculate all BMI related variables."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters and PreArtBMI, PostArtBMI, and delta_bmi events.
 
@@ -801,9 +800,10 @@ class Bmi(Event):
 
 
 class Comorbidity(Event):
-    """Assign comorbidities for a random subset of the population based on each agents 
+    """Assign comorbidities for a random subset of the population based on each agents
     characteristics.
     """
+
     def __init__(self, parameters: Parameters, comorbidity: str, user: bool, new_init: bool):
         """Store parameters, comorbidity, whether or not the population is ART users, and whether
         or not the population is new initiators.
@@ -854,8 +854,8 @@ class Comorbidity(Event):
 
 
 class ApplyComorbidities(Event):
-    """Apply all comorbidities sequentially
-    """
+    """Apply all comorbidities sequentially"""
+
     def __init__(self, paramaters: Parameters, user: bool, new_init: bool) -> None:
         """_summary_
 
@@ -897,8 +897,8 @@ class ApplyComorbidities(Event):
 
 
 class Ltfu(Event):
-    """Lost to follow up event.
-    """
+    """Lost to follow up event."""
+
     def __init__(self, parameters: Parameters, population_size: int) -> None:
         """Store parameters and population size.
 
@@ -943,8 +943,8 @@ class Ltfu(Event):
 
 
 class YearsOutCare(Event):
-    """Calculate years out of care for delayed start agents.
-    """
+    """Calculate years out of care for delayed start agents."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Store parameters.
 
@@ -984,8 +984,8 @@ class YearsOutCare(Event):
 
 
 class NewAges(Event):
-    """Simulate ages for new initiators.
-    """
+    """Simulate ages for new initiators."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters.
 
@@ -1028,8 +1028,8 @@ class NewAges(Event):
 
 
 class UserPopInit(Event):
-    """Population generator for ART users.
-    """
+    """Population generator for ART users."""
+
     def __init__(self, parameters: Parameters, population_size: int):
         """Store parameters, population size, and events to be applied.
 
@@ -1047,9 +1047,9 @@ class UserPopInit(Event):
             [
                 BasePopulation(self.parameters, self.population_size),
                 Status(self.parameters, ART_USER),
-                Bmi(self.parameters),
                 ApplyComorbidities(self.parameters, user=True, new_init=False),
                 add_multimorbidity,
+                Bmi(self.parameters),
                 sort_alphabetically,
                 cast_type,
             ]
@@ -1073,8 +1073,8 @@ class UserPopInit(Event):
 
 
 class NonUserPopInit(Event):
-    """Population generator for ART non-users.
-    """
+    """Population generator for ART non-users."""
+
     def __init__(self, parameters: Parameters, population_size: int) -> None:
         """Store parameters, population size, and events to be applied.
 
@@ -1093,9 +1093,9 @@ class NonUserPopInit(Event):
                 BasePopulation(self.parameters, self.population_size),
                 Ltfu(self.parameters, self.population_size),
                 Status(self.parameters, ART_NONUSER),
-                Bmi(self.parameters),
                 ApplyComorbidities(self.parameters, user=False, new_init=False),
                 add_multimorbidity,
+                Bmi(self.parameters),
                 sort_alphabetically,
                 cast_type,
             ]
@@ -1139,9 +1139,7 @@ class NewPopulation(Event):
                 add_default_columns_new,
                 ApplyComorbidities(self.parameters, user=False, new_init=True),
                 add_multimorbidity,
-                PreArtBMI(self.parameters),
-                PostArtBMI(self.parameters),
-                delta_bmi,
+                Bmi(self.parameters),
                 sort_alphabetically,
                 cast_type,
             ]
@@ -1165,8 +1163,8 @@ class NewPopulation(Event):
 
 
 class PearlPopulation(Event):
-    """Base PEARL population generator
-    """
+    """Base PEARL population generator"""
+
     def __init__(self, parameters: Parameters):
         """Store parameters, as well as user, non-user, and new population generators.
 
