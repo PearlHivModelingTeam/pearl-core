@@ -712,7 +712,7 @@ class Reengage(Event):
         return population
 
 
-class PearlEvents(Event):
+class PearlEvents(EventGrouping):
     """Base Pearl events"""
 
     def __init__(self, parameters: Parameters):
@@ -725,9 +725,8 @@ class PearlEvents(Event):
         parameters : Parameters
             Parameters as defined in pearl.parameters.Parameters.
         """
-        super().__init__(parameters)
-
-        self.events = EventGrouping(
+        self.parameters = parameters
+        super().__init__(
             [
                 IncrementYear(self.parameters),
                 ComorbidityIncidence(self.parameters),
@@ -742,19 +741,3 @@ class PearlEvents(Event):
                 append_new,
             ]
         )
-
-    @override
-    def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
-        """Runs a single year of the base PEARL model.
-
-        Parameters
-        ----------
-        population : pd.DataFrame
-            Population before the events are applied.
-
-        Returns
-        -------
-        pd.DataFrame
-            Population after the events are applied.
-        """
-        return self.events(population)
