@@ -9,8 +9,8 @@ from pearl.parameters import Parameters
 
 
 class Event(ABC):
-    """Abstract class for the core function of the PEARL model.
-    """
+    """Abstract class for the core function of the PEARL model."""
+
     def __init__(self, parameters: Parameters):
         """Store parameters and initialize a random state.
 
@@ -44,18 +44,7 @@ class Event(ABC):
         raise NotImplementedError
 
 
-class EventGrouping:
-    def __init__(self, events: list[EventType]):
-        """A grouping of events to be applied to the population.
-
-        Parameters
-        ----------
-        events : list[EventType]
-            A list of events that are applied sequentially to the passed population during 
-            __call__().
-        """
-        self.events: list[EventType] = events
-
+class EventGrouping(list):
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Apply a group of events to the population sequentially.
 
@@ -69,7 +58,7 @@ class EventGrouping:
         pd.DataFrame
             Population Dataframe after the event or group of events have been applied.
         """
-        for event in self.events:
+        for event in self:
             population = event(population)
         return population
 
@@ -81,6 +70,7 @@ EventType: TypeAlias = Union[Event, EventGrouping, EventFunction]
 
 class Pearl:
     """Base Structure for all PEARL models."""
+
     def __init__(
         self,
         parameters: Parameters,
@@ -113,8 +103,7 @@ class Pearl:
         self.population = self.population_generator(pd.DataFrame([]))
 
     def run(self) -> None:
-        """Run the pearl model.
-        """
+        """Run the pearl model."""
         if self.before_run_events is not None:
             self.population = self.before_run_events(self.population)
         for _ in range(self.parameters.final_year - self.parameters.start_year):
