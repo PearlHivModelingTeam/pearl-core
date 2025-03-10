@@ -321,8 +321,8 @@ def calculate_cd4_increase(pop: pd.DataFrame, parameters: Parameters) -> NDArray
 
 
 class AddNewUser(Event):
-    """Add new users to the PEARL model.
-    """
+    """Add new users to the PEARL model."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Init super class with parameters.
 
@@ -345,8 +345,8 @@ class AddNewUser(Event):
 
 
 class IncreaseCD4Count(Event):
-    """Increase CD4 count for agents in the PEARL model.
-    """
+    """Increase CD4 count for agents in the PEARL model."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Init super class with parameters.
 
@@ -370,8 +370,8 @@ class IncreaseCD4Count(Event):
 
 
 class IncrementYear(Event):
-    """Increment the year of the model by one.
-    """
+    """Increment the year of the model by one."""
+
     def __init__(self, parameters: Parameters):
         """Init super class with parameters.
 
@@ -403,8 +403,8 @@ class IncrementYear(Event):
 
 
 class ComorbidityIncidence(Event):
-    """Calculate the incidence of the comombidities in the PEARL model for that year.
-    """
+    """Calculate the incidence of the comombidities in the PEARL model for that year."""
+
     def __init__(self, parameters: Parameters):
         """Initiatialize object with required parameters. Store necessary parameters as class
         attributes.
@@ -464,8 +464,8 @@ class ComorbidityIncidence(Event):
 
 
 class KillInCare(Event):
-    """Assign mortality to a portion of the in care population.
-    """
+    """Assign mortality to a portion of the in care population."""
+
     def __init__(self, parameters: Parameters):
         """Initiatialize object with required parameters. Store necessary parameters as class
         attributes.
@@ -535,8 +535,8 @@ class KillInCare(Event):
 
 
 class LoseToFollowUp(Event):
-    """Assign some agentsto lost to follow up.
-    """
+    """Assign some agentsto lost to follow up."""
+
     def __init__(self, parameters: Parameters):
         """Initiatialize object with required parameters. Store necessary parameters as class
         attributes.
@@ -589,8 +589,8 @@ class LoseToFollowUp(Event):
 
 
 class DecreaseCD4Count(Event):
-    """Calculate the decrease in CD4 count for ART non-using population
-    """
+    """Calculate the decrease in CD4 count for ART non-using population"""
+
     def __init__(self, parameters: Parameters):
         """Init super class with parameters.
 
@@ -613,8 +613,8 @@ class DecreaseCD4Count(Event):
 
 
 class KillOutCare(Event):
-    """Assign mortality to a portion of agents out of care.
-    """
+    """Assign mortality to a portion of agents out of care."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Initiatialize object with required parameters. Store necessary parameters as class
         attributes.
@@ -682,8 +682,8 @@ class KillOutCare(Event):
 
 
 class Reengage(Event):
-    """Reengage a portion of the out of care population.
-    """
+    """Reengage a portion of the out of care population."""
+
     def __init__(self, parameters: Parameters):
         """Init super class with parameters.
 
@@ -713,11 +713,11 @@ class Reengage(Event):
 
 
 class PearlEvents(Event):
-    """Base Pearl events
-    """
+    """Base Pearl events"""
+
     def __init__(self, parameters: Parameters):
         """Init super class with parameters.
-        
+
         Store the base pearl events as an EventGrouping object.
 
         Parameters
