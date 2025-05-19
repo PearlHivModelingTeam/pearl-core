@@ -263,7 +263,7 @@ class SimulateAges(Event):
         # Draw ages from truncated normal
         ages_1 = draw_from_trunc_norm(
             18,
-            85,
+            80,
             self.coeffs.loc["mu1", "estimate"],
             self.coeffs.loc["sigma1", "estimate"],
             pop_size_1,
@@ -271,7 +271,7 @@ class SimulateAges(Event):
         )
         ages_2 = draw_from_trunc_norm(
             18,
-            85,
+            80,
             self.coeffs.loc["mu2", "estimate"],
             self.coeffs.loc["sigma2", "estimate"],
             pop_size_2,
