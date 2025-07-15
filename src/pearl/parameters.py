@@ -218,12 +218,18 @@ class Parameters:
 
         # Cd4 Increase
         self.cd4_increase = pd.read_hdf(self.parameters_path, "cd4_increase").loc[group_name]
-        self.cd4_increase_knots = pd.read_hdf(self.parameters_path, "cd4_increase_knots").loc[
-            group_name
-        ]
         self.cd4_increase_vcov = pd.read_hdf(self.parameters_path, "cd4_increase_vcov").loc[
             group_name
         ]
+        self.cd4_increase_knots_age = pd.read_hdf(
+            self.parameters_path, "cd4_increase_knots_age"
+        ).loc[group_name]
+        self.cd4_increase_knots_cd4_init = pd.read_hdf(
+            self.parameters_path, "cd4_increase_knots_cd4_init"
+        ).loc[group_name]
+        self.cd4_increase_knots_time_from_h1yy = pd.read_hdf(
+            self.parameters_path, "cd4_increase_knots_time_from_h1yy"
+        ).loc[group_name]
 
         # Cd4 Decrease
         self.cd4_decrease = pd.read_hdf(self.parameters_path, "cd4_decrease").loc["all"]

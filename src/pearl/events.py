@@ -254,62 +254,59 @@ def calculate_cd4_increase(pop: pd.DataFrame, parameters: Parameters) -> NDArray
     NDArray[Any]
         numpy array representing the increased cd4 count values.
     """
-    knots = parameters.cd4_increase_knots
+    knots_age = parameters.cd4_increase_knots_age.to_numpy(dtype=float)
+    knots_cd4_init = parameters.cd4_increase_knots_cd4_init.to_numpy(dtype=float)
+    knots_time_from_h1yy = parameters.cd4_increase_knots_time_from_h1yy.to_numpy(dtype=float)
     coeffs = parameters.cd4_increase.to_numpy(dtype=float)
 
-    # Calculate spline variables
-    pop["time_from_h1yy"] = pop["year"] - pop["last_h1yy"]
-    pop["time_from_h1yy_"] = restricted_quadratic_spline_var(
-        pop["time_from_h1yy"].to_numpy(), knots.to_numpy(), 1
+    # Create all needed intermediate variables
+    pop["age_"] = restricted_cubic_spline_var(pop["age"].to_numpy(), knots_age, 1)
+    pop["age__"] = restricted_cubic_spline_var(pop["age"].to_numpy(), knots_age, 2)
+
+    pop["cd4n_ini_"] = restricted_cubic_spline_var(pop["cd4n_ini"].to_numpy(), knots_cd4_init, 1)
+    pop["cd4n_ini__"] = restricted_cubic_spline_var(pop["cd4n_ini"].to_numpy(), knots_cd4_init, 2)
+
+    pop["time_from_h1yy_"] = restricted_cubic_spline_var(
+        pop["time_from_h1yy"].to_numpy(), knots_time_from_h1yy, 1
     )
-    pop["time_from_h1yy__"] = restricted_quadratic_spline_var(
-        pop["time_from_h1yy"].to_numpy(), knots.to_numpy(), 2
-    )
-    pop["time_from_h1yy___"] = restricted_quadratic_spline_var(
-        pop["time_from_h1yy"].to_numpy(), knots.to_numpy(), 3
+    pop["time_from_h1yy__"] = restricted_cubic_spline_var(
+        pop["time_from_h1yy"].to_numpy(), knots_time_from_h1yy, 2
     )
 
-    # Calculate CD4 Category Variables
-    pop["cd4_cat_349"] = (
-        pop["last_init_sqrtcd4n"].ge(np.sqrt(200.0)) & pop["last_init_sqrtcd4n"].lt(np.sqrt(350.0))
-    ).astype(int)
-    pop["cd4_cat_499"] = (
-        pop["last_init_sqrtcd4n"].ge(np.sqrt(350.0)) & pop["last_init_sqrtcd4n"].lt(np.sqrt(500.0))
-    ).astype(int)
-    pop["cd4_cat_500"] = pop["last_init_sqrtcd4n"].ge(np.sqrt(500.0)).astype(int)
+    # interaction coefficients
+    pop["cd4n_ini__*time_from_h1yy"] = pop["cd4n_ini__"] * pop["time_from_h1yy"]
+    pop["cd4n_ini__*time_from_h1yy_"] = pop["cd4n_ini__"] * pop["time_from_h1yy_"]
+    pop["cd4n_ini__*time_from_h1yy__"] = pop["cd4n_ini__"] * pop["time_from_h1yy__"]
 
-    # Create cross term variables
-    pop["timecd4cat349_"] = pop["time_from_h1yy_"] * pop["cd4_cat_349"]
-    pop["timecd4cat499_"] = pop["time_from_h1yy_"] * pop["cd4_cat_499"]
-    pop["timecd4cat500_"] = pop["time_from_h1yy_"] * pop["cd4_cat_500"]
-    pop["timecd4cat349__"] = pop["time_from_h1yy__"] * pop["cd4_cat_349"]
-    pop["timecd4cat499__"] = pop["time_from_h1yy__"] * pop["cd4_cat_499"]
-    pop["timecd4cat500__"] = pop["time_from_h1yy__"] * pop["cd4_cat_500"]
-    pop["timecd4cat349___"] = pop["time_from_h1yy___"] * pop["cd4_cat_349"]
-    pop["timecd4cat499___"] = pop["time_from_h1yy___"] * pop["cd4_cat_499"]
-    pop["timecd4cat500___"] = pop["time_from_h1yy___"] * pop["cd4_cat_500"]
+    pop["cd4n_ini_*time_from_h1yy"] = pop["cd4n_ini_"] * pop["time_from_h1yy"]
+    pop["cd4n_ini_*time_from_h1yy_"] = pop["cd4n_ini_"] * pop["time_from_h1yy_"]
+    pop["cd4n_ini_*time_from_h1yy__"] = pop["cd4n_ini_"] * pop["time_from_h1yy__"]
 
-    # Create numpy matrix
+    pop["cd4n_ini*time_from_h1yy"] = pop["cd4n_ini"] * pop["time_from_h1yy"]
+    pop["cd4n_ini*time_from_h1yy_"] = pop["cd4n_ini"] * pop["time_from_h1yy_"]
+    pop["cd4n_ini*time_from_h1yy__"] = pop["cd4n_ini"] * pop["time_from_h1yy__"]
+
     pop_matrix = pop[
         [
             "intercept",
+            "age",
+            "age_",
+            "age__",
+            "cd4n_ini",
+            "cd4n_ini_",
+            "cd4n_ini__",
+            "cd4n_ini__*time_from_h1yy",
+            "cd4n_ini__*time_from_h1yy_",
+            "cd4n_ini__*time_from_h1yy__",
+            "cd4n_ini_*time_from_h1yy",
+            "cd4n_ini_*time_from_h1yy_",
+            "cd4n_ini_*time_from_h1yy__",
+            "cd4n_ini*time_from_h1yy",
+            "cd4n_ini*time_from_h1yy_",
+            "cd4n_ini*time_from_h1yy__",
             "time_from_h1yy",
             "time_from_h1yy_",
             "time_from_h1yy__",
-            "time_from_h1yy___",
-            "cd4_cat_349",
-            "cd4_cat_499",
-            "cd4_cat_500",
-            "age_cat",
-            "timecd4cat349_",
-            "timecd4cat499_",
-            "timecd4cat500_",
-            "timecd4cat349__",
-            "timecd4cat499__",
-            "timecd4cat500__",
-            "timecd4cat349___",
-            "timecd4cat499___",
-            "timecd4cat500___",
         ]
     ].to_numpy(dtype=float)
 
