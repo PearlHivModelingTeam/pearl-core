@@ -259,6 +259,10 @@ def calculate_cd4_increase(pop: pd.DataFrame, parameters: Parameters) -> NDArray
     knots_time_from_h1yy = parameters.cd4_increase_knots_time_from_h1yy.to_numpy(dtype=float)
     coeffs = parameters.cd4_increase.to_numpy(dtype=float)
 
+    # Calculate spline variables
+    pop["time_from_h1yy"] = pop["year"] - pop["last_h1yy"]
+    pop["cd4n_ini"] = pop["last_init_sqrtcd4n"] ** 2
+
     # Create all needed intermediate variables
     pop["age_"] = restricted_cubic_spline_var(pop["age"].to_numpy(), knots_age, 1)
     pop["age__"] = restricted_cubic_spline_var(pop["age"].to_numpy(), knots_age, 2)
