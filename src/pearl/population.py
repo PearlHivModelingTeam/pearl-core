@@ -919,6 +919,9 @@ class Ltfu(Event):
         self.coeffs = self.parameters.years_out_of_care["years"]
         self.probability = self.parameters.years_out_of_care["probability"]
 
+        # normalize probabilities to sum to 1
+        self.probability = self.probability / self.probability.sum()
+
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Lose a subset of population to follow up.
@@ -976,11 +979,14 @@ class YearsOutCare(Event):
             Population Dataframe with  years out of care adjustment.
         """
 
+        probability = self.parameters.years_out_of_care["probability"]
+        probability = probability / probability.sum()
+
         delayed = population["status"] == DELAYED
         years_out_of_care = self.random_state.choice(
             a=self.parameters.years_out_of_care["years"],
             size=len(population.loc[delayed]),
-            p=self.parameters.years_out_of_care["probability"],
+            p=probability,
         )
         population.loc[delayed, "h1yy"] = population.loc[delayed, "h1yy"] + years_out_of_care
         population.loc[delayed, "status"] = ART_NAIVE

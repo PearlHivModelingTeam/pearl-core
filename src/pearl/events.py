@@ -569,12 +569,13 @@ class LoseToFollowUp(Event):
 
         lost = (pop["ltfu_prob"] > self.random_state.rand(len(population.index))) & in_care
 
-        p = self.parameters.years_out_of_care["probability"]
+        probability = self.parameters.years_out_of_care["probability"]
+        probability = probability / probability.sum()
 
         years_out_of_care = self.random_state.choice(
             a=self.parameters.years_out_of_care["years"],
             size=len(population.loc[lost]),
-            p=p,
+            p=probability,
         )
 
         # Set variables for lost population
