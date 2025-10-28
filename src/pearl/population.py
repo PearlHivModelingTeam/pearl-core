@@ -569,6 +569,15 @@ class PreArtBMI(Event):
             )
             log_pre_art_bmi = np.matmul(pop_matrix, self.coeffs)
 
+        elif self.model == 4:
+            h1yy = pop["h1yy"].values
+            pop["h1yy_"] = restricted_cubic_spline_var(h1yy, self.t_h1yy, 1)
+            pop["h1yy__"] = restricted_cubic_spline_var(h1yy, self.t_h1yy, 2)
+            pop_matrix = pop[["init_age", "h1yy", "h1yy_", "h1yy__", "intercept"]].to_numpy(
+                dtype=float
+            )
+            log_pre_art_bmi = np.matmul(pop_matrix, self.coeffs)
+
         elif self.model == 3:
             pop_matrix = pop[["init_age", "h1yy", "intercept"]].to_numpy(dtype=float)
             log_pre_art_bmi = np.matmul(pop_matrix, self.coeffs)
