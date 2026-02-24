@@ -527,12 +527,48 @@ class PreArtBMI(Event):
         parameters : Parameters
             Parameters object definining a run as defined in pearl.parameters.Parameters
         """
+        debug = False
+        old = False
         super().__init__(parameters)
         self.coeffs = self.parameters.pre_art_bmi.to_numpy(dtype=float)
         self.t_age = self.parameters.pre_art_bmi_age_knots.to_numpy(dtype=float)
         self.t_h1yy = parameters.pre_art_bmi_h1yy_knots.to_numpy(dtype=float)
         self.rse = self.parameters.pre_art_bmi_rse
         self.model = self.parameters.pre_art_bmi_model
+
+        if old:
+            if self.parameters.group_name == "het_black_female":
+                self.rse = 0.0090919456005762
+            elif self.parameters.group_name == "het_black_male":
+                self.rse = 0.0064260133837476
+            elif self.parameters.group_name == "het_hisp_female":
+                self.rse = 0.0068179835790207
+            elif self.parameters.group_name == "het_hisp_male":
+                self.rse = 0.0057148823800862
+            elif self.parameters.group_name == "het_white_female":
+                self.rse = 0.0092133141030531
+            elif self.parameters.group_name == "het_white_male":
+                self.rse = 0.0053098861180246
+            elif self.parameters.group_name == "idu_black_female":
+                self.rse = 0.0077487381247497
+            elif self.parameters.group_name == "idu_black_male":
+                self.rse = 0.005206569368511
+            elif self.parameters.group_name == "idu_hisp_female":
+                self.rse = 0.0060214545733433
+            elif self.parameters.group_name == "idu_hisp_male":
+                self.rse = 0.0043055988660877
+            elif self.parameters.group_name == "idu_white_female":
+                self.rse = 0.0060214545733433
+            elif self.parameters.group_name == "idu_white_male":
+                self.rse = 0.0040595009072508
+            elif self.parameters.group_name == "msm_black_male":
+                self.rse = 0.0056231730109424
+            elif self.parameters.group_name == "msm_hisp_male":
+                self.rse = 0.0042209103167065
+            elif self.parameters.group_name == "msm_white_male":
+                self.rse = 0.0042861149973545
+        elif debug:
+            self.rse = self.rse / 10
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
