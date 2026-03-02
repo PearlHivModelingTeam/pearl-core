@@ -1,0 +1,16 @@
+name: pearl-docs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy<=2.0
+  - pandas
+  - scipy
+  - numba
+  - sphinx>=7.0
+  - typing_extensions
+  - sphinx-rtd-theme
+  - numpydoc  # Specifically for your docstring style
+  - pip
+  - pip:
+      - -e ..  # Installs 'pearl' from the root in editable mode
