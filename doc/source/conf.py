@@ -40,3 +40,10 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = []  # Use [] to avoid the _static warning if folder is empty
 
 autodoc_mock_imports = ["numba", "numpy", "pandas", "scipy"]
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+}
