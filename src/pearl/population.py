@@ -845,7 +845,7 @@ class Comorbidity(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
-        """Assign comorbidity
+        """Assign comorbidity based on probability defined by agent characteristics.
 
         Parameters
         ----------
@@ -1167,7 +1167,7 @@ class NewPopulation(Event):
 
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
-        """Generate population.
+        """Generate population based on defined list of events.
 
         Parameters
         ----------

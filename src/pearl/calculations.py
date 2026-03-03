@@ -8,8 +8,7 @@ import pandas as pd
 def calculate_prob(pop: pd.DataFrame, coeffs: NDArray[Any]) -> NDArray[Any]:
     """
     Calculate and return a numpy array of individual probabilities from logistic regression
-    given the population and coefficient matrices.
-    Used for multiple logistic regression functions.
+    given the population and coefficient matrices. Used for multiple logistic regression functions.
 
     Parameters
     ----------

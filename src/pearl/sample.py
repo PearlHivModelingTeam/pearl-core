@@ -14,8 +14,8 @@ def draw_from_trunc_norm(
     random_state: np.random.RandomState,
 ) -> NDArray[Any]:
     """
-    Return a numpy array filled with n values drawn from a truncated normal with the given
-    parameters. If n=0 return an empty numpy array.
+    Return a numpy array filled with n values drawn from a truncated normal distribution defined by
+    the given parameters. If n=0 return an empty numpy array.
 
     Parameters
     ----------
