@@ -96,6 +96,12 @@ container.
 4. The next time you open the same dev container, it will be much faster, as it does not require 
 building the image again.
 
+-------------
+Documentation
+-------------
+To power automatic documentation generation, we use `Sphinx <https://www.sphinx-doc.org/en/master/>`
+with numpydoc and napoleon extensions. The documentation generates automatically as long as
+docstrings are properly formatted as per numpydoc style.
 
 -------
 Testing
