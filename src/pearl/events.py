@@ -736,7 +736,7 @@ class PearlEvents(EventGrouping):
                 KillInCare(self.parameters),
                 LoseToFollowUp(self.parameters),
                 DecreaseCD4Count(self.parameters),
-                KillInCare(self.parameters),
+                KillOutCare(self.parameters),
                 Reengage(self.parameters),
                 append_new,
             ]
