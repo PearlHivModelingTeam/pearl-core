@@ -244,6 +244,6 @@ Note on "t_comorbidity" Variables
 ---------------------------------
 An agent entering a model with a comorbidity will have the following states:
 
-- ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=0
-- Non-ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=1
+- ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=-1
+- Non-ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=-1
 - Any agent without a comorbidity will have comorbidity=False and t_comorbidity=0. If the agent later develops the comorbidity, then comorbidity will change to True and t_comorbidity will be set to the year of development.

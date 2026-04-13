@@ -620,7 +620,7 @@ class PreArtBMI(Event):
             np.log10(10),
             np.log10(65),
             log_pre_art_bmi,
-            np.sqrt(self.rse),
+            self.rse,
             len(log_pre_art_bmi),
             self.random_state,
         )
@@ -721,7 +721,7 @@ class PostArtBMI(Event):
             np.sqrt(10),
             np.sqrt(65),
             sqrt_post_art_bmi,
-            np.sqrt(self.rse),
+            self.rse,
             len(sqrt_post_art_bmi),
             self.random_state,
         )
@@ -846,6 +846,10 @@ class Comorbidity(Event):
     @override
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """Assign comorbidity based on probability defined by agent characteristics.
+
+        "t_comorbidity" is set to -1 if the agent has the comorbidity at initialization, and 0
+        otherwise. This variable will be updated to reflect the time of comorbidity onset for agents
+        assigend the comorbidity.
 
         Parameters
         ----------
