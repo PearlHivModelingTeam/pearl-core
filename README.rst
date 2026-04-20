@@ -110,8 +110,6 @@ To ensure that the package is working as intended, can run the test suit with:
 
 ``pytest tests``
 
-TODO: add config details
-
 ^^^^^^^^^^^^^^^
 ``group_names``
 ^^^^^^^^^^^^^^^

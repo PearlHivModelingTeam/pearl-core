@@ -1,5 +1,5 @@
 """
-Functions pertraining to multimorbidity calculations
+Functions pertraining to multimorbidity calculations.
 """
 
 from typing import Any

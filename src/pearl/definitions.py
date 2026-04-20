@@ -1,4 +1,4 @@
-"""Global Defintions"""
+"""Global Definitions for Codes used across PEARL."""
 
 from pathlib import Path
 from typing import Dict, List

@@ -1,5 +1,5 @@
 """
-Module for interpolations.
+Module for interpolation calculations used in the PEARL model.
 """
 
 from typing import Any

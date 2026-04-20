@@ -1,3 +1,6 @@
+"""Core Engine for the PEARL model. Defines the base structure for the model and the main run
+function."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

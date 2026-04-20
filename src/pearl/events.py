@@ -1,4 +1,4 @@
-"""Module for events"""
+"""Module for events that occur during a run in the PEARL model."""
 
 from typing import Any, Optional
 

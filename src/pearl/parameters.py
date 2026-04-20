@@ -1,5 +1,5 @@
 """
-Parameters class
+Parameters class that stores all parameters needed to run the PEARL model.
 """
 
 from pathlib import Path

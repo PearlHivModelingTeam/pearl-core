@@ -1,3 +1,5 @@
+"""Module for population initialization in PEARL."""
+
 from typing import Optional
 
 import numpy as np
@@ -16,7 +18,7 @@ from pearl.definitions import (
     STAGE3,
 )
 from pearl.engine import Event, EventGrouping
-from pearl.interpolate import restricted_cubic_spline_var, restricted_quadratic_spline_var
+from pearl.interpolate import restricted_cubic_spline_var
 from pearl.parameters import Parameters
 from pearl.sample import draw_from_trunc_norm
 

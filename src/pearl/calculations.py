@@ -1,3 +1,5 @@
+"""Module for simple function calculations used in PEARL."""
+
 from typing import Any
 
 import numpy as np

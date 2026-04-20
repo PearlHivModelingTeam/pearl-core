@@ -1,3 +1,5 @@
+"""Base model for PEARL implementing the default population and events."""
+
 from pearl.engine import Pearl
 from pearl.events import PearlEvents
 from pearl.parameters import Parameters

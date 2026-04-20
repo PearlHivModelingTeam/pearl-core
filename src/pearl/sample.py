@@ -1,3 +1,5 @@
+"""Module for sampling functions used in the PEARL model."""
+
 from typing import Any
 
 import numpy as np
