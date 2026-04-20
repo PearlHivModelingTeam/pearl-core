@@ -865,9 +865,9 @@ class Comorbidity(Event):
             self.random_state.rand(len(population.index)) < self.probability
         ).astype(int)
         if self.user:
-            population[f"t_{self.comorbidity}"] = np.array(-1, dtype="int8")
+            population[f"t_{self.comorbidity}"] = -1 * population[self.comorbidity].astype("int8")
         else:
-            population[f"t_{self.comorbidity}"] = -1 * population[self.comorbidity]
+            population[f"t_{self.comorbidity}"] = -1 * population[self.comorbidity].astype("int8")
         return population
 
 
