@@ -103,7 +103,10 @@ class Pearl:
         self.population = self.population_generator(pd.DataFrame([]))
 
     def run(self) -> None:
-        """Run the pearl model."""
+        """
+        Run the pearl model for the number of years defined by the start and final year
+        parameters.
+        """
         if self.before_run_events is not None:
             self.population = self.before_run_events(self.population)
         for _ in range(self.parameters.final_year - self.parameters.start_year):

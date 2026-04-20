@@ -96,6 +96,12 @@ container.
 4. The next time you open the same dev container, it will be much faster, as it does not require 
 building the image again.
 
+-------------
+Documentation
+-------------
+To power automatic documentation generation, we use `Sphinx <https://www.sphinx-doc.org/en/master/>`
+with numpydoc and napoleon extensions. The documentation generates automatically as long as
+docstrings are properly formatted as per numpydoc style.
 
 -------
 Testing
@@ -181,3 +187,63 @@ Probability of an eligible agent receiving an intervention
 ``bmi_intervention_effectiveness``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Efficacy of intervention received by agents receiving intervention.
+
+TODO: Add the range for each of the variables.
+
+--------------------
+Population Variables
+--------------------
+The following variables are included in the model to track the population of agents:
+
+- ``age`` (int): age of the agent in years
+- ``age_cat`` (int): age category of the agent
+- ``anx`` (bool): Whether the agent has anxiety
+- ``ckd`` (bool): Whether the agent has chronic kidney disease
+- ``delta_bmi`` (float): Change in BMI for the agent at ART initiation
+- ``dm`` (bool): Whether the agent has diabetes
+- ``dpr`` (bool): Whether the agent has depression
+- ``esld`` (bool): Whether the agent has end-stage liver disease
+- ``h1yy`` (int): The year of ART initiation for the agent
+- ``hcv`` (bool): Whether the agent has hepatitis C
+- ``ht`` (bool): Whether the agent has hypertension
+- ``init_age`` (int): Age at ART initiation for the agent
+- ``init_sqrtcd4n`` (float): Square root of CD4 count at ART initiation for the agent
+- ``intercept`` (int): Intercept variable that stores 1
+- ``last_h1yy`` (int): ?
+- ``last_init_sqrtcd4n`` (float): ?
+- ``lipid`` (bool): Whether the agent has dyslipidemia
+- ``ltfu_year`` (int): Year the agent was lost to follow-up, if applicable
+- ``malig`` (bool): Whether the agent has malignancy
+- ``mi`` (bool): Whether the agent has myocardial infarction
+- ``mm`` (int): Multimorbidity count and code for the agent
+- ``n_lost`` (int): Number of times the agent has been lost to follow-up
+- ``post_art_bmi`` (float): BMI of the agent after ART initiation
+- ``pre_art_bmi`` (float): BMI of the agent before ART initiation
+- ``return_year`` (int): Year the agent returned to care, if applicable
+- ``smoking`` (bool): Whether the agent is a smoker
+- ``sqrtcd4n_exit`` (float): Square root of CD4 count at exit for the agent
+- ``status`` (int): Whether the agent is alive, dead, or lost to follow-up
+- ``t_anx`` (int): Year the agent developed anxiety, if applicable
+- ``t_ckd`` (int): Year the agent developed chronic kidney disease, if applicable
+- ``t_dm`` (int): Year the agent developed diabetes, if applicable
+- ``t_dpr`` (int): Year the agent developed depression, if applicable
+- ``t_esld`` (int): Year the agent developed end-stage liver disease, if applicable
+- ``t_hcv`` (int): Year the agent developed hepatitis C, if applicable
+- ``t_ht`` (int): Year the agent developed hypertension, if applicable
+- ``t_lipid`` (int): Year the agent developed dyslipidemia, if applicable
+- ``t_malig`` (int): Year the agent developed malignancy, if applicable
+- ``t_mi`` (int): Year the agent developed myocardial infarction, if applicable
+- ``t_smoking`` (int): Year the agent started smoking, if applicable
+- ``time_varying_sqrtcd4n`` (float): Square root of CD4 count for the agent at each time step
+- ``year`` (int): Current year in the simulation for the agent
+- ``year_died`` (int): Year the agent died, if applicable
+- ``years_out`` (int): Number of years the agent has been out of care, if applicable
+
+---------------------------------
+Note on "t_comorbidity" Variables
+---------------------------------
+An agent entering a model with a comorbidity will have the following states:
+
+- ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=-1
+- Non-ART user with comorbidity: Agent has comorbidity=True and t_comorbidity=-1
+- Any agent without a comorbidity will have comorbidity=False and t_comorbidity=0. If the agent later develops the comorbidity, then comorbidity will change to True and t_comorbidity will be set to the year of development.

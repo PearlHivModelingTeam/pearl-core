@@ -1,32 +1,49 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+import os
+import sys
+from datetime import datetime
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# 1. Path setup: Points to the 'src' directory relative to this file
+sys.path.insert(0, os.path.abspath("../../src"))
 
-project = "pearl"
-copyright = "2024, PearlLab"
-author = "PearlLab"
+# 2. Project information
+project = "PEARL"
+copyright = f"{datetime.now().year}, PearlLab Team"
+author = "PearlLab Team"
 release = "1.0.0"
 
-# -- General configuration ---------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+# 3. General configuration
+extensions = [
+    "sphinx.ext.autodoc",  # Core library to generate docs from docstrings
+    "sphinx.ext.autosummary",  # For automated API tables
+    "sphinx.ext.napoleon",  # To understand NumPy/Google docstrings
+    "sphinx.ext.viewcode",  # To add links to highlighted source code
+    "sphinx.ext.intersphinx",  # To link to numpy/pandas external docs
+]
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.napoleon", "sphinx.ext.viewcode"]
-
+# 4. Napoleon settings to match your NumPy style
 napoleon_google_docstring = False
-napoleon_use_param = False
-napoleon_use_ivar = True
+napoleon_numpy_docstring = True
+napoleon_use_param = True
+napoleon_use_rtype = True
 
-templates_path = ["_templates"]
-exclude_patterns = []
+# 5. Automation settings
+autosummary_generate = True  # Turn on automated API page generation
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+    "member-order": "bysource",
+}
 
-language = "Python"
+# 6. HTML Output
+html_theme = "sphinx_rtd_theme"
+html_static_path = []  # Use [] to avoid the _static warning if folder is empty
 
-# -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+autodoc_mock_imports = ["numba", "numpy", "pandas", "scipy"]
 
-html_theme = "alabaster"
-html_static_path = ["_static"]
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+}
