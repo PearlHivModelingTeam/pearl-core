@@ -207,8 +207,8 @@ The following variables are included in the model to track the population of age
 - ``init_age`` (int): Age at ART initiation for the agent
 - ``init_sqrtcd4n`` (float): Square root of CD4 count at ART initiation for the agent
 - ``intercept`` (int): Intercept variable that stores 1
-- ``last_h1yy`` (int): ?
-- ``last_init_sqrtcd4n`` (float): ?
+- ``last_h1yy`` (int): Most recent year of ART initiation (or re-initiation) for the agent, if applicable
+- ``last_init_sqrtcd4n`` (float): Most recent square root of CD4 count at ART initiation (or re-initiation) for the agent, if applicable
 - ``lipid`` (bool): Whether the agent has dyslipidemia
 - ``ltfu_year`` (int): Year the agent was lost to follow-up, if applicable
 - ``malig`` (bool): Whether the agent has malignancy
