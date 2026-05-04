@@ -12,7 +12,7 @@ from numpy.typing import NDArray
 @njit  # type: ignore[misc]
 def restricted_cubic_spline_var(x: NDArray[Any], knots: NDArray[Any], i: int) -> Any:
     """
-    Return a pandas Series of the i'th restricted cubic spline variable for numpy array x with
+    Return a pandas Series of the i-th restricted cubic spline variable for numpy array x with
     knots.
     Adapted from: https:github.com/harrelfe/Hmisc/blob/master/R/rcspline.eval.s
 
@@ -53,7 +53,7 @@ def restricted_cubic_spline_var(x: NDArray[Any], knots: NDArray[Any], i: int) ->
 @njit  # type: ignore[misc]
 def restricted_quadratic_spline_var(x: NDArray[Any], knots: NDArray[Any], i: int) -> Any:
     """
-    Return a pandas Series of the i'th restricted cubic spline variable for numpy array x with
+    Return a pandas Series of the i-th restricted cubic spline variable for numpy array x with
     knots.
     Adapted from: https:github.com/harrelfe/Hmisc/blob/master/R/rcspline.eval.s
 

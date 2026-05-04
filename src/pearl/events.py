@@ -30,7 +30,8 @@ from pearl.parameters import Parameters
 
 
 def append_new(population: pd.DataFrame) -> pd.DataFrame:
-    """Move agents from the temporary, statuses to the main statuses at the end of the year."""
+    """Assign Art user status to reengaging population, assign ART non-user status to lost to
+    follow up population, and assign dead status to those who died in the current year."""
     reengaged = population["status"] == REENGAGED
     ltfu = population["status"] == LTFU
     dying_art_user = population["status"] == DYING_ART_USER
@@ -346,7 +347,7 @@ class AddNewUser(Event):
 
 
 class IncreaseCD4Count(Event):
-    """Increase CD4 count for agents in the PEARL model."""
+    """Increase CD4 count for ART users in the PEARL model."""
 
     def __init__(self, parameters: Parameters) -> None:
         """Init super class with parameters.
@@ -387,7 +388,7 @@ class IncrementYear(Event):
     def __call__(self, population: pd.DataFrame) -> pd.DataFrame:
         """
         Increment calendar year for all agents, increment age and age_cat for those alive in the
-        model, and increment the number of years spent out of care for the ART non-using
+        model, and increment the number of years spent out of care for the ART non-users in the
         population.
         """
         self.parameters.year += 1
@@ -536,7 +537,7 @@ class KillInCare(Event):
 
 
 class LoseToFollowUp(Event):
-    """Assign some agentsto lost to follow up."""
+    """Assign some agents to lost to follow up."""
 
     def __init__(self, parameters: Parameters):
         """Initiatialize object with required parameters. Store necessary parameters as class
@@ -715,7 +716,7 @@ class Reengage(Event):
 
 
 class PearlEvents(EventGrouping):
-    """Base Pearl events"""
+    """Base Pearl events."""
 
     def __init__(self, parameters: Parameters):
         """Init super class with parameters.

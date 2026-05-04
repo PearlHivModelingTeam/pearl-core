@@ -49,28 +49,28 @@ POPULATION_TYPE_DICT = {
 
 # Status Constants
 ART_NAIVE = 0
-"""int: ART Naive status code."""
+"""int: ART Naive status code 0."""
 DELAYED = 1
-"""int: ART Delayed status code."""
+"""int: ART Delayed status code 1."""
 ART_USER = 2
-"""int: ART User status code."""
+"""int: ART User status code 2."""
 ART_NONUSER = 3
-"""int: ART Non-user status code."""
+"""int: ART Non-user status code 3."""
 REENGAGED = 4
-"""int: ART Reengaged status code."""
+"""int: ART Reengaged status code 4."""
 LTFU = 5
-"""int: LTFU status code."""
+"""int: LTFU status code 5."""
 DYING_ART_USER = 6
-"""int: ART Dying User status code."""
+"""int: ART Dying User status code 6."""
 DYING_ART_NONUSER = 7
-"""int: ART Dying Non-user status code."""
+"""int: ART Dying Non-user status code 7."""
 DEAD_ART_USER = 8
-"""int: ART Dead User status code."""
+"""int: ART Dead User status code 8."""
 DEAD_ART_NONUSER = 9
-"""int: ART Dead Non-user status code."""
+"""int: ART Dead Non-user status code 9."""
 
 # Smearing correction
-SMEARING = 1.4
+SMEARING = 1.42
 """float: Smearing correction factor for log-normal distributions."""
 
 # Comorbidity stages

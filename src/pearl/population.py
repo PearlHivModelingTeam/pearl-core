@@ -68,7 +68,8 @@ def add_age_categories(population: pd.DataFrame) -> pd.DataFrame:
 
 def add_default_columns(population: pd.DataFrame) -> pd.DataFrame:
     """
-    Add default values for columns necessary for simulation.
+    Add default values for columns necessary for simulation to all agents that are in the
+    population at the start of simulation.
 
     Parameters
     ----------
@@ -78,7 +79,7 @@ def add_default_columns(population: pd.DataFrame) -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        Population with added default columns
+        Population with added default columns.
     """
     # Add final columns used for calculations and output
     population["last_h1yy"] = population["h1yy"]
@@ -97,6 +98,19 @@ def add_default_columns(population: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_default_columns_new(population: pd.DataFrame) -> pd.DataFrame:
+    """Add default columns for new agents that are added to the population after the start of
+    simulation.
+
+    Parameters
+    ----------
+    population : pd.DataFrame
+        Population DataFrame to add default columns to.
+
+    Returns
+    -------
+    pd.DataFrame
+        Population with added default columns.
+    """
     # Calculate time varying cd4 count and other needed variables
     population["last_h1yy"] = population["h1yy"]
     population["time_varying_sqrtcd4n"] = population["init_sqrtcd4n"]
@@ -1145,6 +1159,8 @@ class NonUserPopInit(Event):
 
 
 class NewPopulation(Event):
+    """Population generator for new initiators."""
+
     def __init__(self, parameters: Parameters) -> None:
         """Store parameters and events to be applied.
 

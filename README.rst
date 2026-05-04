@@ -110,6 +110,10 @@ To ensure that the package is working as intended, can run the test suit with:
 
 ``pytest tests``
 
+-------------------
+Parameter Variables
+-------------------
+
 ^^^^^^^^^^^^^^^
 ``group_names``
 ^^^^^^^^^^^^^^^
@@ -153,7 +157,7 @@ Year to end the simulation. Integer between 2010 and 2035.
 ^^^^^^^^^^^^^^^
 ``sa_variable``
 ^^^^^^^^^^^^^^^
-Supports all comorbidities
+Supports all comorbidities.
 
 ^^^^^^^^^^^^^^^^^
 ``idu_threshold``
@@ -164,78 +168,76 @@ for the idu population above other risk groups. ``2x``, ``5x``, ``10x``.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``bmi_intervention_scenario``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-BMI scenario to run from ``0``, ``1``, ``2``, or ``3``
+BMI scenario to run from ``0``, ``1``, ``2``, or ``3``.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``bmi_intervention_start_year``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Year to begin BMI intervention in simulation
+Year to begin BMI intervention in simulation.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``bmi_intervention_end_year``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Year to end BMI intervention in simulation
+Year to end BMI intervention in simulation.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``bmi_intervention_coverage``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Probability of an eligible agent receiving an intervention
+Probability of an eligible agent receiving an intervention.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ``bmi_intervention_effectiveness``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Efficacy of intervention received by agents receiving intervention.
 
-TODO: Add the range for each of the variables.
-
 --------------------
 Population Variables
 --------------------
 The following variables are included in the model to track the population of agents:
 
-- ``age`` (int): age of the agent in years
-- ``age_cat`` (int): age category of the agent
-- ``anx`` (bool): Whether the agent has anxiety
-- ``ckd`` (bool): Whether the agent has chronic kidney disease
-- ``delta_bmi`` (float): Change in BMI for the agent at ART initiation
-- ``dm`` (bool): Whether the agent has diabetes
-- ``dpr`` (bool): Whether the agent has depression
-- ``esld`` (bool): Whether the agent has end-stage liver disease
-- ``h1yy`` (int): The year of ART initiation for the agent
-- ``hcv`` (bool): Whether the agent has hepatitis C
-- ``ht`` (bool): Whether the agent has hypertension
-- ``init_age`` (int): Age at ART initiation for the agent
-- ``init_sqrtcd4n`` (float): Square root of CD4 count at ART initiation for the agent
-- ``intercept`` (int): Intercept variable that stores 1
-- ``last_h1yy`` (int): Most recent year of ART initiation (or re-initiation) for the agent, if applicable
-- ``last_init_sqrtcd4n`` (float): Most recent square root of CD4 count at ART initiation (or re-initiation) for the agent, if applicable
-- ``lipid`` (bool): Whether the agent has dyslipidemia
-- ``ltfu_year`` (int): Year the agent was lost to follow-up, if applicable
-- ``malig`` (bool): Whether the agent has malignancy
-- ``mi`` (bool): Whether the agent has myocardial infarction
-- ``mm`` (int): Multimorbidity count and code for the agent
-- ``n_lost`` (int): Number of times the agent has been lost to follow-up
-- ``post_art_bmi`` (float): BMI of the agent after ART initiation
-- ``pre_art_bmi`` (float): BMI of the agent before ART initiation
-- ``return_year`` (int): Year the agent returned to care, if applicable
-- ``smoking`` (bool): Whether the agent is a smoker
-- ``sqrtcd4n_exit`` (float): Square root of CD4 count at exit for the agent
-- ``status`` (int): Whether the agent is alive, dead, or lost to follow-up
-- ``t_anx`` (int): Year the agent developed anxiety, if applicable
-- ``t_ckd`` (int): Year the agent developed chronic kidney disease, if applicable
-- ``t_dm`` (int): Year the agent developed diabetes, if applicable
-- ``t_dpr`` (int): Year the agent developed depression, if applicable
-- ``t_esld`` (int): Year the agent developed end-stage liver disease, if applicable
-- ``t_hcv`` (int): Year the agent developed hepatitis C, if applicable
-- ``t_ht`` (int): Year the agent developed hypertension, if applicable
-- ``t_lipid`` (int): Year the agent developed dyslipidemia, if applicable
-- ``t_malig`` (int): Year the agent developed malignancy, if applicable
-- ``t_mi`` (int): Year the agent developed myocardial infarction, if applicable
-- ``t_smoking`` (int): Year the agent started smoking, if applicable
-- ``time_varying_sqrtcd4n`` (float): Square root of CD4 count for the agent at each time step
-- ``year`` (int): Current year in the simulation for the agent
-- ``year_died`` (int): Year the agent died, if applicable
-- ``years_out`` (int): Number of years the agent has been out of care, if applicable
+- ``age`` (int): age of the agent in years.
+- ``age_cat`` (int): age category of the agent.
+- ``anx`` (bool): Whether the agent has anxiety.
+- ``ckd`` (bool): Whether the agent has chronic kidney disease.
+- ``delta_bmi`` (float): Change in BMI for the agent at ART initiation.
+- ``dm`` (bool): Whether the agent has diabetes.
+- ``dpr`` (bool): Whether the agent has depression.
+- ``esld`` (bool): Whether the agent has end-stage liver disease.
+- ``h1yy`` (int): The year of ART initiation for the agent.
+- ``hcv`` (bool): Whether the agent has hepatitis C.
+- ``ht`` (bool): Whether the agent has hypertension.
+- ``init_age`` (int): Age at ART initiation for the agent.
+- ``init_sqrtcd4n`` (float): Square root of CD4 count at ART initiation for the agent.
+- ``intercept`` (int): Intercept variable that stores 1.
+- ``last_h1yy`` (int): Most recent year of ART initiation (or re-initiation) for the agent, if applicable.
+- ``last_init_sqrtcd4n`` (float): Most recent square root of CD4 count at ART initiation (or re-initiation) for the agent, if applicable.
+- ``lipid`` (bool): Whether the agent has dyslipidemia.
+- ``ltfu_year`` (int): Year the agent was lost to follow-up, if applicable.
+- ``malig`` (bool): Whether the agent has malignancy.
+- ``mi`` (bool): Whether the agent has myocardial infarction.
+- ``mm`` (int): Multimorbidity count and code for the agent.
+- ``n_lost`` (int): Number of times the agent has been lost to follow-up.
+- ``post_art_bmi`` (float): BMI of the agent after ART initiation.
+- ``pre_art_bmi`` (float): BMI of the agent before ART initiation.
+- ``return_year`` (int): Year the agent returned to care, if applicable.
+- ``smoking`` (bool): Whether the agent is a smoker.
+- ``sqrtcd4n_exit`` (float): Square root of CD4 count at exit for the agent.
+- ``status`` (int): The ART and life status of the agent.
+- ``t_anx`` (int): Year the agent developed anxiety, if applicable.
+- ``t_ckd`` (int): Year the agent developed chronic kidney disease, if applicable.
+- ``t_dm`` (int): Year the agent developed diabetes, if applicable.
+- ``t_dpr`` (int): Year the agent developed depression, if applicable.
+- ``t_esld`` (int): Year the agent developed end-stage liver disease, if applicable.
+- ``t_hcv`` (int): Year the agent developed hepatitis C, if applicable.
+- ``t_ht`` (int): Year the agent developed hypertension, if applicable.
+- ``t_lipid`` (int): Year the agent developed dyslipidemia, if applicable.
+- ``t_malig`` (int): Year the agent developed malignancy, if applicable.
+- ``t_mi`` (int): Year the agent developed myocardial infarction, if applicable.
+- ``t_smoking`` (int): Year the agent started smoking, if applicable.
+- ``time_varying_sqrtcd4n`` (float): Square root of CD4 count for the agent at current time step.
+- ``year`` (int): Current year in the simulation for the agent.
+- ``year_died`` (int): Year the agent died, if applicable.
+- ``years_out`` (int): Number of years the agent has been out of care, if applicable.
 
 ---------------------------------
 Note on "t_comorbidity" Variables
